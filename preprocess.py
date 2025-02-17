@@ -60,8 +60,8 @@ def main(args):
     files = os.listdir(args.input)
     for i, file_name in enumerate(sorted(os.listdir(args.input))):
         file_path = os.path.join(args.input, file_name)
-        if not file_path.endswith('.nii.gz'):
-            print(f"[{i+1}/{len(files)}] Skipping {file_name} (not a nii.gz file)")
+        if not file_path.endswith('.nii') and not file_path.endswith('.nii.gz'):
+            print(f"[{i+1}/{len(files)}] Skipping {file_name} (not a .nii/.nii.gz file)")
             continue
         print(f"[{i+1}/{len(files)}] Processing {file_path}...")
         file = read_nii_with_fix(file_path)
@@ -74,8 +74,10 @@ def main(args):
         output_file_name = None
         if file_name.endswith('_0000.nii.gz'):
             output_file_name = file_name
-        else:
+        elif file_name.endswith('.nii.gz'):
             output_file_name = file_name.replace('.nii.gz', '_0000.nii.gz')
+        elif file_name.endswith('.nii'):
+            output_file_name = file_name.replace('.nii', '_0000.nii.gz')
         output_file_path = os.path.join(args.output, output_file_name)
         nib.save(file, output_file_path)
         print(f"\tSaved to {output_file_path}")

@@ -5,3 +5,8 @@ venv
 .DS_Store
 
 mr
+mr_proc
+ct
+ct_proc
+data
+data_proc
