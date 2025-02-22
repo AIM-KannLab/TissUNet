@@ -53,5 +53,26 @@ python postprocess.py -mi mr_pre \
                       -pi preds \
                       -mo mr_post \
                       -po preds_post \
+
+python postprocess.py -mi mr_pre \
+                      -pi preds \
+                      -mo mr_post_def \
+                      -po preds_post_def \
                       --deface
 ```
+
+# Computation of metrics
+To compute metrics for a single directory of predictions use:
+```
+python compute_metrics.py -pi <preds_input_path> \
+                          -mo <metrics_csv_output_file_path>
+```
+Example:
+```
+python compute_metrics.py -pi preds \
+                          -mo preds/metrics.csv
+```
+
+# Known Issues
+- For some slices IMEA throws a warning during 2D (micro) metrics computation: `Slope is zero slope --> fractal dimension will be set to zero`.
+- For some slices the volumetrics computed by IMEA and by hand differ by a few pixels.

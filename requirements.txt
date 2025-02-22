@@ -104,7 +104,7 @@ nnunetv2==2.5.2
     # via -r requirements.in
 numexpr==2.10.2
     # via blosc2
-numpy==2.2.2
+numpy==1.26.4
     # via
     #   -r requirements.in
     #   acvl-utils
@@ -140,6 +140,7 @@ packaging==24.2
     #   scikit-image
 pandas==2.2.3
     # via
+    #   -r requirements.in
     #   batchgenerators
     #   imea
     #   nnunetv2
@@ -218,7 +219,9 @@ torch==2.6.0
     #   fft-conv-pytorch
     #   nnunetv2
 tqdm==4.67.1
-    # via nnunetv2
+    # via
+    #   -r requirements.in
+    #   nnunetv2
 traceback2==1.4.0
     # via unittest2
 typing-extensions==4.12.2
