@@ -14,7 +14,7 @@ def parse_args():
         args.output = args.input
     return args
 
-def read_nii_with_fix(file_path):
+def read_nii_with_fix(file_path: str):
     """
     Attempts to load a NIfTI file using nibabel. If loading fails, tries to fix it using SimpleITK.
 

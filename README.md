@@ -22,6 +22,7 @@ python preprocess.py -i mr -o mr_pre
 This will run TissUNet on all `.nii.gz` files in `<in_dir>` and write results in `<out_dir>`.
 ```
 export nnUNet_raw="$(pwd)/<any_path_really_this_stuff_is_required_even_though_not_used>"
+export nnUNet_preprocessed="$(pwd)/<any_path_really_this_stuff_is_not_used_but_suppresses_the_warning>"
 export nnUNet_results="$(pwd)/<relative_path_to_nnUNet_results>"
 nnUNetv2_predict -i <in_dir> \
                  -o <out_dir> \
@@ -30,6 +31,7 @@ nnUNetv2_predict -i <in_dir> \
 Example:
 ```
 export nnUNet_raw="$(pwd)/nnUNet_raw" # This path does not exist lol
+export nnUNet_preprocessed="$(pwd)/nnUNet_preprocessed"
 export nnUNet_results="$(pwd)/nnUNet_results"
 nnUNetv2_predict -i mr_pre \
                  -o preds \
@@ -37,6 +39,7 @@ nnUNetv2_predict -i mr_pre \
 ```
 
 # Post-process
+The following script will filter brain mask (retain only the largest connected componnent) and deface if required
 ```
 python postprocess.py -mi <mr_input_path> \
                       -pi <preds_input_path> \
@@ -50,5 +53,26 @@ python postprocess.py -mi mr_pre \
                       -pi preds \
                       -mo mr_post \
                       -po preds_post \
+
+python postprocess.py -mi mr_pre \
+                      -pi preds \
+                      -mo mr_post_def \
+                      -po preds_post_def \
                       --deface
 ```
+
+# Computation of metrics
+To compute metrics for a single directory of predictions use:
+```
+python compute_metrics.py -pi <preds_input_path> \
+                          -mo <metrics_csv_output_file_path>
+```
+Example:
+```
+python compute_metrics.py -pi preds \
+                          -mo preds/metrics.csv
+```
+
+# Known Issues
+- For some slices IMEA throws a warning during 2D (micro) metrics computation: `Slope is zero slope --> fractal dimension will be set to zero`.
+- For some slices the volumetrics computed by IMEA and by hand differ by a few pixels.

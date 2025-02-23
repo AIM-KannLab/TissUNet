@@ -65,6 +65,8 @@ imagecodecs==2024.12.30
     # via nnunetv2
 imageio==2.37.0
     # via scikit-image
+imea==0.3.5
+    # via -r requirements.in
 importlib-resources==6.5.2
     # via nibabel
 jinja2==3.1.5
@@ -102,7 +104,7 @@ nnunetv2==2.5.2
     # via -r requirements.in
 numexpr==2.10.2
     # via blosc2
-numpy==2.2.2
+numpy==1.26.4
     # via
     #   -r requirements.in
     #   acvl-utils
@@ -116,16 +118,20 @@ numpy==2.2.2
     #   fft-conv-pytorch
     #   imagecodecs
     #   imageio
+    #   imea
     #   matplotlib
     #   nibabel
     #   nnunetv2
     #   numexpr
+    #   opencv-python
     #   pandas
     #   scikit-image
     #   scikit-learn
     #   scipy
     #   seaborn
     #   tifffile
+opencv-python==4.11.0.86
+    # via imea
 packaging==24.2
     # via
     #   lazy-loader
@@ -134,7 +140,9 @@ packaging==24.2
     #   scikit-image
 pandas==2.2.3
     # via
+    #   -r requirements.in
     #   batchgenerators
+    #   imea
     #   nnunetv2
     #   seaborn
 pillow==11.1.0
@@ -165,6 +173,7 @@ scikit-image==0.25.1
     # via
     #   acvl-utils
     #   batchgenerators
+    #   imea
     #   nnunetv2
 scikit-learn==1.6.1
     # via
@@ -175,6 +184,7 @@ scipy==1.15.1
     #   -r requirements.in
     #   batchgenerators
     #   dicom2nifti
+    #   imea
     #   nnunetv2
     #   scikit-image
     #   scikit-learn
@@ -209,7 +219,9 @@ torch==2.6.0
     #   fft-conv-pytorch
     #   nnunetv2
 tqdm==4.67.1
-    # via nnunetv2
+    # via
+    #   -r requirements.in
+    #   nnunetv2
 traceback2==1.4.0
     # via unittest2
 typing-extensions==4.12.2

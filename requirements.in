@@ -1,5 +1,8 @@
-nibabel
-SimpleITK
 numpy
+pandas
 scipy
+nibabel
+tqdm
+SimpleITK
 nnunetv2
+imea
