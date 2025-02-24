@@ -8,6 +8,9 @@ pip install -r requirements.txt
 pip install --upgrade git+https://github.com/FabianIsensee/hiddenlayer.git
 ```
 
+# Download Weights
+You can download weights of TissUNet using [this link](https://drive.google.com/drive/folders/18c06FU825eIsgyscO1CEbZf8jszzKJdT?usp=drive_link)
+
 # Preprocess
 The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified it will overwrite files in `<in_dir>`.
 ```
