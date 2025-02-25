@@ -68,12 +68,12 @@ python postprocess.py -mi mr_pre \
 To compute metrics for a single directory of predictions use:
 ```
 python compute_metrics.py -pi <preds_input_path> \
-                          -mo <metrics_csv_output_file_path>
+                          -mo <metrics_json_output_file_path>
 ```
 Example:
 ```
 python compute_metrics.py -pi preds \
-                          -mo preds/metrics.csv
+                          -mo preds/metrics.json
 ```
 
 # Known Issues
