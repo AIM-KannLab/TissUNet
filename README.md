@@ -73,7 +73,7 @@ python compute_metrics.py -pi <preds_input_path> \
 Example:
 ```
 python compute_metrics.py -pi preds \
-                          -mo preds/metrics.json
+                          -mo preds/metrics.csv
 ```
 
 # Known Issues

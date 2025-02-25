@@ -5,6 +5,7 @@ import numpy as np
 import nibabel as nib
 from tqdm import tqdm
 import json
+import pandas as pd
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Postprocessing')
@@ -33,7 +34,7 @@ def main(args):
     total_samples = len(nii_files)
     print(f"🔍 Found {total_samples} NIfTI files in directory '{args.preds_input}'.")
 
-    metrics = {}
+    metrics = {} # We use dict here and after convert it to DataFrame and then to CSV for sainity check
     for sample_name in tqdm(sorted(nii_files), desc="🖼️ Processing NIfTI files"):
         nii_path = os.path.join(args.preds_input, sample_name)
         img = nib.load(nii_path)
@@ -50,13 +51,23 @@ def main(args):
         
         metrics[sample_name] = {
             "path": nii_path,
-            "sample_name": sample_name,
+            "sample_name": sample_name.replace('.nii.gz', ''),
             "volumes": volumes,
             "img_info": extract_img_info_json(img),
         }
+    
+    records = []
+    for key, value in metrics.items():
+        flat_record = {'file': key}
+        flat_record.update({k: v for k, v in value.items() if k != 'volumes' and k != 'img_info'})
+        for vol_key, vol_value in value.get('volumes', {}).items():
+            flat_record[f'volumes_{vol_key}'] = vol_value
+        for info_key, info_value in value.get('img_info', {}).items():
+            flat_record[f'img_info_{info_key}'] = info_value
+        records.append(flat_record)
 
-    with open(args.metrics_output, 'w') as f:
-        json.dump(metrics, f, indent=4)
+    df = pd.DataFrame(records)
+    df.to_csv(args.metrics_output, index=False)
     
     print(f"✅ Processing complete! Processed {total_samples} samples in total.")
     print(f"📁 Results saved to '{args.metrics_output}'.")
