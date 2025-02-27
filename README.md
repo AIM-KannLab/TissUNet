@@ -11,6 +11,23 @@ pip install --upgrade git+https://github.com/FabianIsensee/hiddenlayer.git
 # Download Weights
 You can download weights of TissUNet using [this link](https://drive.google.com/drive/folders/18c06FU825eIsgyscO1CEbZf8jszzKJdT?usp=drive_link)
 
+# Project Structure
+```
+TissUNet \ <cloned repo>
+    venv \
+    mr \
+    nnUNet_results \
+        Dataset003_synthrad \
+            nnUNetTrainer__nnUNetPlans__3d_fullres \
+    .gitignore
+    README.md
+    preprocess.py
+    postprocess.py
+    compute_metrics.py
+    requirements.in
+    requirements.txt
+```
+
 # Preprocess
 The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified it will overwrite files in `<in_dir>`.
 ```
@@ -68,7 +85,7 @@ python postprocess.py -mi mr_pre \
 To compute metrics for a single directory of predictions use:
 ```
 python compute_metrics.py -pi <preds_input_path> \
-                          -mo <metrics_csv_output_file_path>
+                          -mo <metrics_json_output_file_path>
 ```
 Example:
 ```

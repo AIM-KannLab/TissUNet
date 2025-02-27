@@ -3,26 +3,9 @@ import sys
 import argparse
 import numpy as np
 import nibabel as nib
-import pandas as pd
 from tqdm import tqdm
-import imea
-import warnings
-import logging
-
-warning_log_count = 0
-logging.basicConfig(
-    filename='imea_warnings.txt',
-    level=logging.WARNING,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
-def custom_showwarning(message, category, filename, lineno, file=None, line=None):
-    global warning_log_count
-    log_message = f"{category.__name__} in {filename} at line {lineno}: {message}"
-    logging.warning(log_message)
-    warning_log_count += 1
-
-warnings.showwarning = custom_showwarning
+import json
+import pandas as pd
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Postprocessing')
@@ -37,65 +20,57 @@ def parse_args():
         sys.exit(1)
     return args
 
+def extract_img_info_json(img: nib.Nifti1Image):
+    info = {
+        "affine": img.affine.tolist(),
+        "data_shape": list(img.shape),
+        "data_dtype": str(img.get_data_dtype()),
+        "spatial_resolution": [float(x) for x in img.header.get_zooms()],
+    }
+    return info
+
 def main(args):
-    global warning_log_count
-    args.preds_input = "preds_post"
     nii_files = [f for f in os.listdir(args.preds_input) if f.endswith('.nii.gz')]
     total_samples = len(nii_files)
     print(f"🔍 Found {total_samples} NIfTI files in directory '{args.preds_input}'.")
-    
-    df = pd.DataFrame()
-    for sample_idx, sample_name in enumerate(nii_files, start=1):
+
+    metrics = {} # We use dict here and after convert it to DataFrame and then to CSV for sainity check
+    for sample_name in tqdm(sorted(nii_files), desc="🖼️ Processing NIfTI files"):
         nii_path = os.path.join(args.preds_input, sample_name)
         img = nib.load(nii_path)
         img_data = img.get_fdata().astype(np.uint8)
-        assert np.all(np.equal(np.mod(img_data, 1), 0)), "Non-integer values found in NIfTI file"
-        header = img.header
-        spatial_resolution_x, spatial_resolution_y, spatial_resolution_z = header.get_zooms()
-        assert spatial_resolution_x == spatial_resolution_y, "Spatial resolution in X and Y dimensions must be equal"
-        labels = [l for l in np.unique(img_data) if l != 0]
+        if not np.all(np.equal(np.mod(img_data, 1), 0)): 
+            print("Warning: Non-integer values found in NIfTI file")
+        labels = np.unique(img_data)
         
+        volumes = {}
         for label in labels:
-            tqdm_bar = tqdm(range(0, img_data.shape[2], 50),
-                            desc=f"[{sample_idx}/{total_samples}, {label}] {sample_name}",
-                            leave=True)
-            for idx in tqdm_bar:
-                img_slice = img_data[:, :, idx]
-                mask = (img_slice == label).astype(np.uint8)
-                if np.sum(mask) == 0:
-                    continue
+            mask = (img_data == label).astype(np.uint8)
+            volume = int(np.sum(mask))
+            volumes[str(int(label))] = volume
+        
+        metrics[sample_name] = {
+            "path": nii_path,
+            "sample_name": sample_name.replace('.nii.gz', ''),
+            "volumes": volumes,
+            "img_info": extract_img_info_json(img),
+        }
+    
+    records = []
+    for key, value in metrics.items():
+        flat_record = {'file': key}
+        flat_record.update({k: v for k, v in value.items() if k != 'volumes' and k != 'img_info'})
+        for vol_key, vol_value in value.get('volumes', {}).items():
+            flat_record[f'volumes_{vol_key}'] = vol_value
+        for info_key, info_value in value.get('img_info', {}).items():
+            flat_record[f'img_info_{info_key}'] = info_value
+        records.append(flat_record)
 
-                with warnings.catch_warnings(record=True) as caught_warnings:
-                    warnings.simplefilter("always")
-                    df_2d, df_3d = imea.shape_measurements_3d(mask, 0.5, spatial_resolution_x, spatial_resolution_z)
-                    for w in caught_warnings:
-                        warning_msg = (
-                            f"Sample: {sample_name}, Label: {label}, Slice: {idx}, "
-                            f"File Path: {nii_path} -- {w.category.__name__}: {w.message}"
-                        )
-                        logging.warning(warning_msg)
-                        warning_log_count += 1
-                
-                volume_manual = np.sum(mask)
-                df_ = pd.concat([df_2d, df_3d], axis=1)
-                df_.insert(0, 'volume_manual', volume_manual)
-                df_.insert(0, 'spatial_resolution_z', spatial_resolution_z)
-                df_.insert(0, 'spatial_resolution_y', spatial_resolution_y)
-                df_.insert(0, 'spatial_resolution_x', spatial_resolution_x)
-                df_.insert(0, 'object_id', df_.index)
-                df_.insert(0, 'slice_idx', idx)
-                df_.insert(0, 'label', label)
-                df_.insert(0, 'sample_name', sample_name)
-                
-                df = pd.concat([df, df_], axis=0)
-
-    # Save results to CSV with an added column for the file path.
-    df.insert(0, 'path', df['sample_name'].apply(lambda name: os.path.join(args.preds_input, name)))
+    df = pd.DataFrame(records)
     df.to_csv(args.metrics_output, index=False)
-    print(f"\n✅ Processing complete! Processed {total_samples} samples in total.")
+    
+    print(f"✅ Processing complete! Processed {total_samples} samples in total.")
     print(f"📁 Results saved to '{args.metrics_output}'.")
-    if warning_log_count > 0:
-        print(f"⚠️ {warning_log_count} warnings logged to 'imea_warnings.txt'.")
     
 if __name__ == '__main__':
     args = parse_args()
