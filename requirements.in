@@ -1,8 +1,11 @@
-numpy
+numpy<2
 pandas
 scipy
 nibabel
 tqdm
 SimpleITK
 nnunetv2
-imea
+tensorflow
+scikit-image
+itk
+gdown

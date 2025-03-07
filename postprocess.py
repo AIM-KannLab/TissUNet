@@ -58,16 +58,19 @@ def main(args):
     assert os.path.exists(ds_json_path), f'dataset.json file not found in: {args.preds_input}'
     ds_json = json.load(open(ds_json_path))
     brain_val = ds_json['labels']['brain']
-    print(f'Creating output directory {args.mr_output} ...')
+    
+    print(f"🌟 Creating output directories...")
+    print(f" MRI output directory: {args.mr_output}")
     os.makedirs(args.mr_output, exist_ok=True)
-    print(f'Creating output directory {args.preds_output} ...')
+    print(f" Predictions output directory: {args.preds_output}")
     os.makedirs(args.preds_output, exist_ok=True)
-    pred_files = sorted(os.listdir(args.preds_input))
-    print("Scanning input directories ...")
+
+    print("\n🔍 Scanning input directories ...")
     paths_pairs = []
-    for file in sorted(pred_files):
+    pred_filenames = [fn for fn in os.listdir(args.preds_input) if fn.endswith('.nii.gz')]
+    for file in sorted(pred_filenames):
         if not file.endswith('.nii.gz'):
-            print(f"Skipping {file} (not a nii.gz file)")
+            print(f"⏭️ Skipping {file} (not a nii.gz file)")
             continue
         sample_name = file.split('.')[0]
         mr_path = os.path.join(args.mr_input, f'{sample_name}_0000.nii.gz')
@@ -75,9 +78,11 @@ def main(args):
         assert os.path.exists(mr_path), f'MR file not found: {mr_path}'
         assert os.path.exists(pred_path), f'Predictions file not found: {pred_path}'
         paths_pairs.append((mr_path, pred_path))
-    print(f"Found {len(paths_pairs)} pairs of files. Processing ...")
+
+    print(f"✅ Found {len(paths_pairs)} pairs of files. Processing ...")
+
     for i, (mr_path, pred_path) in enumerate(paths_pairs):
-        print(f"[{i+1}/{len(paths_pairs)}] Processing {mr_path} and {pred_path} ...")
+        print(f"\n[{i+1}/{len(paths_pairs)}] Processing {mr_path} and {pred_path} ...")
         mr = nib.load(mr_path)
         mr_data = mr.get_fdata()
         pred = nib.load(pred_path)
@@ -86,12 +91,14 @@ def main(args):
         # Copy data
         mr_out_data   = mr_data.copy()
         pred_out_data = pred_data.copy()
+
         # Filter brain mask
         brain_mask = (pred_data == brain_val).astype(np.uint8)
         brain_mask_filtered = keep_largest_component(brain_mask)
         pred_out_data[(pred_data == brain_val) & (brain_mask_filtered == 0)] = 0
         
         if args.deface:
+            print("💀 Defacing MRI and predictions ...")
             # Deface MRI
             mr_out_data = deface_mri_left(mr_out_data, brain_mask_filtered)
             pred_out_data = deface_nii_left(pred_out_data, brain_mask_filtered, background_value=0)
@@ -99,14 +106,23 @@ def main(args):
         # Create output paths
         mr_out_path   = os.path.join(args.mr_output, os.path.basename(mr_path))
         pred_out_path = os.path.join(args.preds_output, os.path.basename(pred_path))
+
         # Create output files
         mr_out_file   = nib.Nifti1Image(mr_out_data, mr.affine) 
         pred_out_file = nib.Nifti1Image(pred_out_data, pred.affine)
+
         # Save output files
+        print(f"💾 Saving processed files: {mr_out_path} and {pred_out_path}")
         nib.save(mr_out_file, mr_out_path)
         nib.save(pred_out_file, pred_out_path)
-        
-    print("Done!")
+
+    # Copy mr_input/meta.csv to mr_output/meta.csv
+    meta_input_path = os.path.join(args.mr_input, 'meta.csv')
+    meta_output_path = os.path.join(args.mr_output, 'meta.csv')
+    print(f"\n📑 Copying metadata: {meta_input_path} -> {meta_output_path} ...")
+    os.system(f'cp {meta_input_path} {meta_output_path}')
+
+    print("\n🎉 Postprocessing completed successfully!")
 
 if __name__ == '__main__':
     args = parse_args()
