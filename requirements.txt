@@ -21,6 +21,8 @@ batchgenerators==0.25.1
     #   nnunetv2
 batchgeneratorsv2==0.2.3
     # via nnunetv2
+beautifulsoup4==4.13.3
+    # via gdown
 blosc2==3.2.0
     # via
     #   acvl-utils
@@ -46,7 +48,9 @@ einops==0.8.1
 fft-conv-pytorch==1.2.0
     # via batchgeneratorsv2
 filelock==3.17.0
-    # via torch
+    # via
+    #   gdown
+    #   torch
 flatbuffers==25.2.10
     # via tensorflow-macos
 fonttools==4.56.0
@@ -57,6 +61,8 @@ future==1.0.0
     # via batchgenerators
 gast==0.6.0
     # via tensorflow-macos
+gdown==5.2.0
+    # via -r requirements.in
 google-auth==2.38.0
     # via
     #   google-auth-oauthlib
@@ -219,6 +225,8 @@ pydicom==3.0.1
     # via dicom2nifti
 pyparsing==3.2.1
     # via matplotlib
+pysocks==1.7.1
+    # via requests
 python-dateutil==2.9.0.post0
     # via
     #   matplotlib
@@ -229,9 +237,10 @@ pytz==2025.1
     # via pandas
 pyyaml==6.0.2
     # via yacs
-requests==2.32.3
+requests[socks]==2.32.3
     # via
     #   blosc2
+    #   gdown
     #   nnunetv2
     #   requests-oauthlib
     #   tensorboard
@@ -272,6 +281,8 @@ six==1.17.0
     #   tensorboard
     #   tensorflow-macos
     #   unittest2
+soupsieve==2.6
+    # via beautifulsoup4
 sympy==1.13.1
     # via torch
 tensorboard==2.14.1
@@ -306,11 +317,13 @@ torch==2.6.0
 tqdm==4.67.1
     # via
     #   -r requirements.in
+    #   gdown
     #   nnunetv2
 traceback2==1.4.0
     # via unittest2
 typing-extensions==4.12.2
     # via
+    #   beautifulsoup4
     #   nibabel
     #   tensorflow-macos
     #   torch

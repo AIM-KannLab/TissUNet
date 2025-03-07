@@ -9,7 +9,12 @@ pip install --upgrade git+https://github.com/FabianIsensee/hiddenlayer.git
 ```
 
 ## Download Weights
-You can download weights of TissUNet using [this link](https://drive.google.com/drive/folders/18c06FU825eIsgyscO1CEbZf8jszzKJdT?usp=drive_link)
+Run
+```
+python download_weights.py
+```
+
+You can also find weights for TissUNet by [this link](https://drive.google.com/drive/folders/18c06FU825eIsgyscO1CEbZf8jszzKJdT?usp=drive_link)
 
 ## Project Structure
 Below is the sample of initial project structure.
@@ -25,6 +30,7 @@ TissUNet \ <cloned repo>
     nnUNet_results \
         Dataset003_synthrad \
             nnUNetTrainer__nnUNetPlans__3d_fullres \
+    model_weights \ <weights for densenet>
     .gitignore
     README.md
     preprocess.py
