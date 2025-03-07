@@ -22,18 +22,19 @@ fi
 
 # List of dataset directories
 datasets=(
+    #"aomic_reg" #done
     #"abcd_new2023_reg"
-    "abcd_old_reg"
-    "WU1200_reg"
-    #"calgary_super_reg" # done
+    # "abcd_old_reg" #done, new to do
+    # "WU1200_reg" #done
+    "calgary_super_reg" # done
     #"pixar_reg" # done
-    "icbm_reg"
-    "healthy_adults_nihm_reg"
-    "pings_registered"
-    "baby_reg"
-    "nyu_reg"
-    "IXI_reg"
-    "sald_reg"
+    # "icbm_reg" # done
+    # "healthy_adults_nihm_reg" # done
+    "pings_registered" # done
+    # "baby_reg" # done
+    # "nyu_reg" # done
+    # "IXI_reg" # done 
+    # "sald_reg" # done
 )
 
 # Construct the full paths and run the preprocessing

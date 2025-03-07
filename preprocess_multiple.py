@@ -25,7 +25,7 @@ def process_dataset(input_path):
     csv_path = "/media/sda/Elvira/extracranial/file_counts.csv"
         
     # Extract the dataset name from the input path and remove '_reg'
-    dataset_name = os.path.basename(input_path).replace('_reg', '')
+    dataset_name = os.path.basename(input_path).split('_')[0]
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     # Write to CSV before processing

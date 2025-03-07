@@ -10,18 +10,19 @@ OUTPUT_BASE="/media/sda/Elvira/extracranial/data/3d_outputs"
 
 # List of dataset names (without _reg)
 datasets=(
-    #"abcd_new2023"
+    "abcd_new2023"
     # "abcd_old"
     # "WU1200"
-    "calgary_super"
-    "pixar"
+    # "calgary_super"
+    # "pixar"
     # "icbm"
     # "healthy_adults_nihm"
-    # "pingsistered"
+    # "pings"
     # "baby"
     # "nyu"
     # "IXI"
     # "sald"
+    #"aomic"
 )
 
 # Run the prediction script
