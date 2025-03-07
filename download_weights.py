@@ -13,7 +13,9 @@ local_remote_mapping = {
 
 if os.path.exists('nnUNet_results'):
     shutil.rmtree('nnUNet_results')
-    
+
+print("🚀 Downloading weights...")
 for local, remote in tqdm(local_remote_mapping.items()):
     os.makedirs(os.path.dirname(local), exist_ok=True)
     gdown.download(remote, local, quiet=True, fuzzy=True)
+print("🎉 All files downloaded successfully!")
