@@ -1,13 +1,14 @@
 # Preprocessing
 import os
 import argparse
+import pandas as pd
 import nibabel as nib
 import SimpleITK as sitk
 from nibabel.orientations import aff2axcodes, axcodes2ornt, ornt_transform
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
-    parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory')
+    parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
     parser.add_argument('--output', '-o', type=str, required=False, help='Output directory (optional)')
     args = parser.parse_args()
     if not args.output:
@@ -57,13 +58,24 @@ def reorient_to_lpi(file: nib.Nifti1Image):
 
 def main(args):
     os.makedirs(args.output, exist_ok=True)
-    files = os.listdir(args.input)
-    for i, file_name in enumerate(sorted(os.listdir(args.input))):
+    filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
+    
+    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+    print('🔎 Checking meta.csv')
+    if not all([col in meta.columns for col in ['filename', 'age', 'sex']]):
+        raise ValueError('meta.csv must contain filename, age and sex columns')
+    for filename in filenames:
+        if filename not in meta['filename'].values:
+            raise ValueError(f'{samplename} not found in meta.csv')
+    meta['filename'] = meta['filename'].apply(lambda x: x.replace('.nii.gz', '_0000.nii.gz').replace('.nii', '_0000.nii.gz'))
+    meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
+    print('✅ meta.csv checked and saved')
+    # Preprocessing filenames
+    print('🔄 Preprocessing filenames')
+    print()
+    for i, file_name in enumerate(sorted(filenames)):
         file_path = os.path.join(args.input, file_name)
-        if not file_path.endswith('.nii') and not file_path.endswith('.nii.gz'):
-            print(f"[{i+1}/{len(files)}] Skipping {file_name} (not a .nii/.nii.gz file)")
-            continue
-        print(f"[{i+1}/{len(files)}] Processing {file_path}...")
+        print(f"[{i+1}/{len(filenames)}] Processing {file_path}...")
         file = read_nii_with_fix(file_path)
         if aff2axcodes(file.affine) != ('L', 'P', 'I'):
             print(f"\tFound orientation {aff2axcodes(file.affine)}. Reorienting to LPI...")
@@ -82,6 +94,7 @@ def main(args):
         nib.save(file, output_file_path)
         print(f"\tSaved to {output_file_path}")
         print()
+    print('🎉 Preprocessing Done!')
 
 if __name__ == '__main__':
     args = parse_args()
