@@ -4,12 +4,16 @@
 #
 #    pip-compile
 #
-acvl-utils==0.2.4
+absl-py==2.1.0
+    # via
+    #   tensorboard
+    #   tensorflow-macos
+acvl-utils==0.2.5
     # via nnunetv2
-anyio==4.8.0
-    # via httpx
 argparse==1.4.0
     # via unittest2
+astunparse==1.6.3
+    # via tensorflow-macos
 batchgenerators==0.25.1
     # via
     #   acvl-utils
@@ -17,16 +21,17 @@ batchgenerators==0.25.1
     #   nnunetv2
 batchgeneratorsv2==0.2.3
     # via nnunetv2
-blosc2==3.0.0
-    # via acvl-utils
-certifi==2025.1.31
+blosc2==3.2.0
     # via
-    #   httpcore
-    #   httpx
-    #   requests
+    #   acvl-utils
+    #   nnunetv2
+cachetools==5.5.2
+    # via google-auth
+certifi==2025.1.31
+    # via requests
 charset-normalizer==3.4.1
     # via requests
-connected-components-3d==3.22.0
+connected-components-3d==3.23.0
     # via acvl-utils
 contourpy==1.3.1
     # via matplotlib
@@ -42,49 +47,88 @@ fft-conv-pytorch==1.2.0
     # via batchgeneratorsv2
 filelock==3.17.0
     # via torch
+flatbuffers==25.2.10
+    # via tensorflow-macos
 fonttools==4.56.0
     # via matplotlib
 fsspec==2025.2.0
     # via torch
 future==1.0.0
     # via batchgenerators
+gast==0.6.0
+    # via tensorflow-macos
+google-auth==2.38.0
+    # via
+    #   google-auth-oauthlib
+    #   tensorboard
+google-auth-oauthlib==1.0.0
+    # via tensorboard
+google-pasta==0.2.0
+    # via tensorflow-macos
 graphviz==0.20.3
     # via nnunetv2
-h11==0.14.0
-    # via httpcore
-httpcore==1.0.7
-    # via httpx
-httpx==0.28.1
-    # via blosc2
-idna==3.10
+grpcio==1.70.0
     # via
-    #   anyio
-    #   httpx
-    #   requests
+    #   tensorboard
+    #   tensorflow-macos
+h5py==3.13.0
+    # via tensorflow-macos
+idna==3.10
+    # via requests
 imagecodecs==2024.12.30
     # via nnunetv2
 imageio==2.37.0
     # via scikit-image
-imea==0.3.5
-    # via -r requirements.in
 importlib-resources==6.5.2
     # via nibabel
-jinja2==3.1.5
+itk==5.4.2.post1
+    # via -r requirements.in
+itk-core==5.4.2.post1
+    # via
+    #   itk
+    #   itk-io
+    #   itk-numerics
+itk-filtering==5.4.2.post1
+    # via
+    #   itk
+    #   itk-registration
+    #   itk-segmentation
+itk-io==5.4.2.post1
+    # via itk
+itk-numerics==5.4.2.post1
+    # via
+    #   itk
+    #   itk-filtering
+itk-registration==5.4.2.post1
+    # via itk
+itk-segmentation==5.4.2.post1
+    # via itk
+jinja2==3.1.6
     # via torch
 joblib==1.4.2
     # via scikit-learn
+keras==2.14.0
+    # via tensorflow-macos
 kiwisolver==1.4.8
     # via matplotlib
 lazy-loader==0.4
     # via scikit-image
+libclang==18.1.1
+    # via tensorflow-macos
 linecache2==1.0.0
     # via traceback2
+markdown==3.7
+    # via tensorboard
 markupsafe==3.0.2
-    # via jinja2
-matplotlib==3.10.0
+    # via
+    #   jinja2
+    #   werkzeug
+matplotlib==3.10.1
     # via
     #   nnunetv2
     #   seaborn
+ml-dtypes==0.2.0
+    # via tensorflow-macos
 mpmath==1.3.0
     # via sympy
 msgpack==1.1.0
@@ -100,7 +144,7 @@ nibabel==5.3.2
     #   -r requirements.in
     #   dicom2nifti
     #   nnunetv2
-nnunetv2==2.5.2
+nnunetv2==2.6.0
     # via -r requirements.in
 numexpr==2.10.2
     # via blosc2
@@ -116,33 +160,39 @@ numpy==1.26.4
     #   dicom2nifti
     #   dynamic-network-architectures
     #   fft-conv-pytorch
+    #   h5py
     #   imagecodecs
     #   imageio
-    #   imea
+    #   itk
+    #   itk-core
     #   matplotlib
+    #   ml-dtypes
     #   nibabel
     #   nnunetv2
     #   numexpr
-    #   opencv-python
     #   pandas
     #   scikit-image
     #   scikit-learn
     #   scipy
     #   seaborn
+    #   tensorboard
+    #   tensorflow-macos
     #   tifffile
-opencv-python==4.11.0.86
-    # via imea
+oauthlib==3.2.2
+    # via requests-oauthlib
+opt-einsum==3.4.0
+    # via tensorflow-macos
 packaging==24.2
     # via
     #   lazy-loader
     #   matplotlib
     #   nibabel
     #   scikit-image
+    #   tensorflow-macos
 pandas==2.2.3
     # via
     #   -r requirements.in
     #   batchgenerators
-    #   imea
     #   nnunetv2
     #   seaborn
 pillow==11.1.0
@@ -151,8 +201,20 @@ pillow==11.1.0
     #   imageio
     #   matplotlib
     #   scikit-image
+platformdirs==4.3.6
+    # via blosc2
+protobuf==4.25.6
+    # via
+    #   tensorboard
+    #   tensorflow-macos
 py-cpuinfo==9.0.0
     # via blosc2
+pyasn1==0.6.1
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.4.1
+    # via google-auth
 pydicom==3.0.1
     # via dicom2nifti
 pyparsing==3.2.1
@@ -168,23 +230,30 @@ pytz==2025.1
 pyyaml==6.0.2
     # via yacs
 requests==2.32.3
-    # via nnunetv2
-scikit-image==0.25.1
     # via
+    #   blosc2
+    #   nnunetv2
+    #   requests-oauthlib
+    #   tensorboard
+requests-oauthlib==2.0.0
+    # via google-auth-oauthlib
+rsa==4.9
+    # via google-auth
+scikit-image==0.25.2
+    # via
+    #   -r requirements.in
     #   acvl-utils
     #   batchgenerators
-    #   imea
     #   nnunetv2
 scikit-learn==1.6.1
     # via
     #   batchgenerators
     #   nnunetv2
-scipy==1.15.1
+scipy==1.15.2
     # via
     #   -r requirements.in
     #   batchgenerators
     #   dicom2nifti
-    #   imea
     #   nnunetv2
     #   scikit-image
     #   scikit-learn
@@ -197,17 +266,33 @@ simpleitk==2.4.1
     #   nnunetv2
 six==1.17.0
     # via
+    #   astunparse
+    #   google-pasta
     #   python-dateutil
+    #   tensorboard
+    #   tensorflow-macos
     #   unittest2
-sniffio==1.3.1
-    # via anyio
 sympy==1.13.1
     # via torch
+tensorboard==2.14.1
+    # via tensorflow-macos
+tensorboard-data-server==0.7.2
+    # via tensorboard
+tensorflow==2.14.0
+    # via -r requirements.in
+tensorflow-estimator==2.14.0
+    # via tensorflow-macos
+tensorflow-io-gcs-filesystem==0.37.1
+    # via tensorflow-macos
+tensorflow-macos==2.14.0
+    # via tensorflow
+termcolor==2.5.0
+    # via tensorflow-macos
 threadpoolctl==3.5.0
     # via
     #   batchgenerators
     #   scikit-learn
-tifffile==2025.1.10
+tifffile==2025.2.18
     # via
     #   nnunetv2
     #   scikit-image
@@ -226,8 +311,8 @@ traceback2==1.4.0
     # via unittest2
 typing-extensions==4.12.2
     # via
-    #   anyio
     #   nibabel
+    #   tensorflow-macos
     #   torch
 tzdata==2025.1
     # via pandas
@@ -235,5 +320,14 @@ unittest2==1.1.0
     # via batchgenerators
 urllib3==2.3.0
     # via requests
+werkzeug==3.1.3
+    # via tensorboard
+wheel==0.45.1
+    # via astunparse
+wrapt==1.14.1
+    # via tensorflow-macos
 yacs==0.1.8
     # via nnunetv2
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
