@@ -62,10 +62,10 @@ def main(args):
     os.makedirs(args.mr_output, exist_ok=True)
     print(f'Creating output directory {args.preds_output} ...')
     os.makedirs(args.preds_output, exist_ok=True)
-    pred_files = sorted(os.listdir(args.preds_input))
     print("Scanning input directories ...")
     paths_pairs = []
-    for file in sorted(pred_files):
+    pred_filenames = [fn for fn in os.listdir(args.preds_input) if fn.endswith('.nii.gz')]
+    for file in sorted(pred_filenames):
         if not file.endswith('.nii.gz'):
             print(f"Skipping {file} (not a nii.gz file)")
             continue

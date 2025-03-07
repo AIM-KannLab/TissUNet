@@ -4,7 +4,7 @@ venv
 .venv
 .DS_Store
 
-mr*
+mr_*
 ct*
 data*
 preds*
@@ -13,3 +13,5 @@ test.ipynb
 imea_results.csv
 imea_warnings.txt
 metrics.json
+
+__pycache__/
