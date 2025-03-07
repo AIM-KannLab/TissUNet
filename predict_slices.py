@@ -16,6 +16,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with MR images and meta.csv')
     parser.add_argument('--output', '-o', type=str, required=False, help='Output path for meta.csv')
+    parser.add_argument('--metadata', '-m', type=str, required=False, help='Path to metadata CSV file')
     parser.add_argument('--model_weight_path_selection', type=str, default='model_weights/densenet_itmt2.hdf5',
                         help='Path to the model weights for selection')
     parser.add_argument('--cuda_visible_devices', type=str, default="0",
@@ -23,8 +24,12 @@ def parse_args():
     args = parser.parse_args()
     if not os.path.exists(args.input):
         raise ValueError('Input path does not exist')
-    if not os.path.exists(os.path.join(args.input, 'meta.csv')):
-        raise ValueError('meta.csv does not exist in input path')
+    if args.metadata:
+        if not os.path.exists(args.metadata):
+            raise ValueError('Metadata file does not exist')
+    else:
+        if not os.path.exists(os.path.join(args.input, 'meta.csv')):
+            raise ValueError('meta.csv does not exist in input path')
     if not args.output:
         args.output = args.input
     return args
@@ -84,19 +89,26 @@ def predict_slice(age=9,
 
 if __name__ == '__main__':
     args = parse_args()
-    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+        # Use custom metadata path if provided, otherwise use meta.csv from input directory
+    if args.metadata:
+        meta = pd.read_csv(args.metadata)
+    else:
+        meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
     
+    # Set CUDA visible devices according to args
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_visible_devices
+
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii.gz')]
     # Print "Found n files" where n is the number of files with emoji
     print(f"📄 Found {len(filenames)} files")
     print()
     for i, filename in enumerate(filenames):
         print(f"[{i+1}/{len(filenames)}] Processing {filename}...")
-        row = meta[meta['filename'] == filename]
+        row = meta[meta['Filename'] == filename]
         print(row)
-        print(row['age'])
-        age = row['age'].values[0]
-        sex = row['sex'].values[0]
+        print(row['AGE_M'])
+        age = row['AGE_M'].values[0]
+        sex = row['SEX'].values[0]
         filepath = os.path.join(args.input, filename)
         
         slice_label = predict_slice(
@@ -106,7 +118,7 @@ if __name__ == '__main__':
             model_weight_path_selection=args.model_weight_path_selection, 
             cuda_visible_devices=args.cuda_visible_devices
         )
-        meta.loc[meta['filename'] == filename, 'slice_label'] = slice_label
+        meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
         print()
     meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
     print('✅ meta.csv saved with slice labels')
