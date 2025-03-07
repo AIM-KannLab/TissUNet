@@ -103,9 +103,7 @@ python postprocess.py -mi mr_pre \
                       -pi preds \
                       -mo mr_post \
                       -po preds_post
-```
-or
-```
+
 python postprocess.py -mi mr_pre \
                       -pi preds \
                       -mo mr_post_def \
