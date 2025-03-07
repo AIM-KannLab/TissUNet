@@ -7,13 +7,13 @@
 absl-py==2.1.0
     # via
     #   tensorboard
-    #   tensorflow-macos
+    #   tensorflow
 acvl-utils==0.2.5
     # via nnunetv2
 argparse==1.4.0
     # via unittest2
 astunparse==1.6.3
-    # via tensorflow-macos
+    # via tensorflow
 batchgenerators==0.25.1
     # via
     #   acvl-utils
@@ -52,7 +52,7 @@ filelock==3.17.0
     #   gdown
     #   torch
 flatbuffers==25.2.10
-    # via tensorflow-macos
+    # via tensorflow
 fonttools==4.56.0
     # via matplotlib
 fsspec==2025.2.0
@@ -60,7 +60,7 @@ fsspec==2025.2.0
 future==1.0.0
     # via batchgenerators
 gast==0.6.0
-    # via tensorflow-macos
+    # via tensorflow
 gdown==5.2.0
     # via -r requirements.in
 google-auth==2.38.0
@@ -70,15 +70,15 @@ google-auth==2.38.0
 google-auth-oauthlib==1.0.0
     # via tensorboard
 google-pasta==0.2.0
-    # via tensorflow-macos
+    # via tensorflow
 graphviz==0.20.3
     # via nnunetv2
 grpcio==1.70.0
     # via
     #   tensorboard
-    #   tensorflow-macos
+    #   tensorflow
 h5py==3.13.0
-    # via tensorflow-macos
+    # via tensorflow
 idna==3.10
     # via requests
 imagecodecs==2024.12.30
@@ -114,13 +114,13 @@ jinja2==3.1.6
 joblib==1.4.2
     # via scikit-learn
 keras==2.14.0
-    # via tensorflow-macos
+    # via tensorflow
 kiwisolver==1.4.8
     # via matplotlib
 lazy-loader==0.4
     # via scikit-image
 libclang==18.1.1
-    # via tensorflow-macos
+    # via tensorflow
 linecache2==1.0.0
     # via traceback2
 markdown==3.7
@@ -134,7 +134,7 @@ matplotlib==3.10.1
     #   nnunetv2
     #   seaborn
 ml-dtypes==0.2.0
-    # via tensorflow-macos
+    # via tensorflow
 mpmath==1.3.0
     # via sympy
 msgpack==1.1.0
@@ -182,19 +182,19 @@ numpy==1.26.4
     #   scipy
     #   seaborn
     #   tensorboard
-    #   tensorflow-macos
+    #   tensorflow
     #   tifffile
 oauthlib==3.2.2
     # via requests-oauthlib
 opt-einsum==3.4.0
-    # via tensorflow-macos
+    # via tensorflow
 packaging==24.2
     # via
     #   lazy-loader
     #   matplotlib
     #   nibabel
     #   scikit-image
-    #   tensorflow-macos
+    #   tensorflow
 pandas==2.2.3
     # via
     #   -r requirements.in
@@ -212,7 +212,7 @@ platformdirs==4.3.6
 protobuf==4.25.6
     # via
     #   tensorboard
-    #   tensorflow-macos
+    #   tensorflow
 py-cpuinfo==9.0.0
     # via blosc2
 pyasn1==0.6.1
@@ -279,26 +279,26 @@ six==1.17.0
     #   google-pasta
     #   python-dateutil
     #   tensorboard
-    #   tensorflow-macos
+    #   tensorflow
     #   unittest2
 soupsieve==2.6
     # via beautifulsoup4
 sympy==1.13.1
     # via torch
 tensorboard==2.14.1
-    # via tensorflow-macos
+    # via tensorflow
 tensorboard-data-server==0.7.2
     # via tensorboard
 tensorflow==2.14.0
     # via -r requirements.in
 tensorflow-estimator==2.14.0
-    # via tensorflow-macos
+    # via tensorflow
 tensorflow-io-gcs-filesystem==0.37.1
-    # via tensorflow-macos
-tensorflow-macos==2.14.0
+    # via tensorflow
+tensorflow==2.14.0
     # via tensorflow
 termcolor==2.5.0
-    # via tensorflow-macos
+    # via tensorflow
 threadpoolctl==3.5.0
     # via
     #   batchgenerators
@@ -325,7 +325,7 @@ typing-extensions==4.12.2
     # via
     #   beautifulsoup4
     #   nibabel
-    #   tensorflow-macos
+    #   tensorflow
     #   torch
 tzdata==2025.1
     # via pandas
@@ -338,7 +338,7 @@ werkzeug==3.1.3
 wheel==0.45.1
     # via astunparse
 wrapt==1.14.1
-    # via tensorflow-macos
+    # via tensorflow
 yacs==0.1.8
     # via nnunetv2
 
