@@ -105,7 +105,11 @@ def main(args):
         # Save output files
         nib.save(mr_out_file, mr_out_path)
         nib.save(pred_out_file, pred_out_path)
-        
+    # Copy mr_input/meta.csv to mr_output/meta.csv
+    meta_input_path = os.path.join(args.mr_input, 'meta.csv')
+    meta_output_path = os.path.join(args.mr_output, 'meta.csv')
+    print(f"Copying {meta_input_path} to {meta_output_path} ...")
+    os.system(f'cp {meta_input_path} {meta_output_path}')
     print("Done!")
 
 if __name__ == '__main__':
