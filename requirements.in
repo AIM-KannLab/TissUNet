@@ -7,5 +7,6 @@ SimpleITK
 nnunetv2
 tensorflow
 scikit-image
-itk
+itk-elastix
 gdown
+intensity-normalization[ants]
