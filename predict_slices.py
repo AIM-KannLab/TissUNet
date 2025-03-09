@@ -189,6 +189,9 @@ if __name__ == '__main__':
             print(f"Skipping this file and continuing with the next one.")
             print()
             continue
+
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output, exist_ok=True)          
     
     meta.to_csv(os.path.join(args.output, f'metadata_{args.dataset}.csv'), index=False)
     print(f'✅ metadata_{args.dataset}.csv saved with slice labels')
