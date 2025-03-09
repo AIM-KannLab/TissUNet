@@ -26,6 +26,8 @@ def parse_args():
                         help='Path to the model weights for selection')
     parser.add_argument('--cuda_visible_devices', type=str, default="0",
                         help='CUDA device ID to use')
+    parser.add_argument('--dataset', '-d', type=str, required=False, 
+                        help='Dataset name to use in output filename (metadata_{dataset}.csv)')                        
     args = parser.parse_args()
     if not os.path.exists(args.input):
         raise ValueError('Input path does not exist')
@@ -37,6 +39,8 @@ def parse_args():
             raise ValueError('meta.csv does not exist in input path')
     if not args.output:
         args.output = args.input
+    if not args.dataset:
+        args.dataset = os.path.basename(os.path.normpath(args.input))
     return args
 
 # register the MRI to the template     
@@ -68,7 +72,7 @@ def select_template_based_on_age(age):
     # MNI templates 
     age_ranges = {"golden_image/mni_templates/nihpd_asym_04.5-08.5_t1w.nii" : {"min_age":3, "max_age":7.999},
                     "golden_image/mni_templates/nihpd_asym_07.5-13.5_t1w.nii": {"min_age":8, "max_age":13.99999},
-                    "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":35}}
+                    "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":80}}
     for golden_file_path, age_values in age_ranges.items():
         if age_values['min_age'] <= int(age) and int(age) <= age_values['max_age']: 
             #print(golden_file_path)
@@ -144,7 +148,7 @@ def predict_slice(age = 9,
 
 if __name__ == '__main__':
     args = parse_args()
-        # Use custom metadata path if provided, otherwise use meta.csv from input directory
+    # Use custom metadata path if provided, otherwise use meta.csv from input directory
     if args.metadata:
         meta = pd.read_csv(args.metadata)
     else:
@@ -161,23 +165,30 @@ if __name__ == '__main__':
     shutil.rmtree(temp_path, ignore_errors=True)
     os.makedirs(temp_path, exist_ok=True)
     for i, filename in enumerate(filenames):
-        print(f"[{i+1}/{len(filenames)}] Processing {filename}...")
-        row = meta[meta['Filename'] == filename]
-        print(row)
-        print(row['AGE_M'])
-        age = row['AGE_M'].values[0]
-        sex = row['SEX'].values[0]
-        filepath = os.path.join(args.input, filename)
-        
-        slice_label = predict_slice(
-            age=age, 
-            sex=sex, 
-            input_path=filepath,
-            path_to=temp_path,
-            cuda_visible_devices=args.cuda_visible_devices,
-            model_weight_path_selection=args.model_weight_path_selection, 
-        )
-        meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
-        print()
-    meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
-    print('✅ meta.csv saved with slice labels')
+        try:
+            print(f"[{i+1}/{len(filenames)}] Processing {filename}...")
+            row = meta[meta['Filename'] == filename]
+            print(row)
+            print(row['AGE_M'])
+            age = row['AGE_M'].values[0]
+            sex = row['SEX'].values[0]
+            filepath = os.path.join(args.input, filename)
+            
+            slice_label = predict_slice(
+                age=age, 
+                sex=sex, 
+                input_path=filepath,
+                path_to=temp_path,
+                cuda_visible_devices=args.cuda_visible_devices,
+                model_weight_path_selection=args.model_weight_path_selection, 
+            )
+            meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
+            print()
+        except Exception as e:
+            print(f"⚠️ Error processing {filename}: {str(e)}")
+            print(f"Skipping this file and continuing with the next one.")
+            print()
+            continue
+    
+    meta.to_csv(os.path.join(args.output, f'metadata_{args.dataset}.csv'), index=False)
+    print(f'✅ metadata_{args.dataset}.csv saved with slice labels')
