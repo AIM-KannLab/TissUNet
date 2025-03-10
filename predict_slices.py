@@ -38,7 +38,8 @@ def parse_args():
         if not os.path.exists(os.path.join(args.input, 'meta.csv')):
             raise ValueError('meta.csv does not exist in input path')
     if not args.output:
-        args.output = args.input
+        # Use parent directory of input instead of input directory itself
+        args.output = os.path.dirname(os.path.normpath(args.input))
     if not args.dataset:
         args.dataset = os.path.basename(os.path.normpath(args.input))
     return args
@@ -191,7 +192,15 @@ if __name__ == '__main__':
             continue
 
     # Create output directory if it doesn't exist
-    os.makedirs(args.output, exist_ok=True)          
+    os.makedirs(args.output, exist_ok=True)
+    
+    # Remove rows without a Slice label
+    if 'Slice label' in meta.columns:
+        original_count = len(meta)
+        meta = meta.dropna(subset=['Slice label'])
+        removed_count = original_count - len(meta)
+        if removed_count > 0:
+            print(f"ℹ️ Removed {removed_count} rows without Slice label")
     
     meta.to_csv(os.path.join(args.output, f'metadata_{args.dataset}.csv'), index=False)
     print(f'✅ metadata_{args.dataset}.csv saved with slice labels')
