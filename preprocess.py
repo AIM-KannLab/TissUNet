@@ -4,9 +4,7 @@ import argparse
 import pandas as pd
 import nibabel as nib
 import SimpleITK as sitk
-from nibabel.orientations import aff2axcodes, axcodes2ornt, ornt_transform
 import itk
-import numpy as np
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
