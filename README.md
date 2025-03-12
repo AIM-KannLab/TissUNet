@@ -128,8 +128,11 @@ python compute_metrics.py -pi <preds_input_path> \
 ```
 Example:
 ```
-python compute_metrics.py -pi preds \
-                          -mo preds/metrics.csv
+python compute_metrics.py -pi preds_post \
+                          -mo preds_post/metrics.csv
+
+python compute_metrics.py -pi preds_post_def \
+                          -mo preds_post_def/metrics.csv
 ```
 
 # Known Issues
