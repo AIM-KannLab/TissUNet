@@ -48,6 +48,9 @@ BCP-431010-64mo-v1_13_T1w.nii,9,M
 IXI621-Guys-1100-T1.nii,12,F
 ```
 
+## Pipeline Visualization
+![pipeline](pipeline.png "Pipeline")
+
 # Step 1: Preprocess
 The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified it will overwrite files in `<in_dir>`.
 ```
