@@ -7,15 +7,19 @@
 absl-py==2.1.0
     # via
     #   tensorboard
-    #   tensorflow
+    #   tensorflow-macos
 acvl-utils==0.2.5
     # via nnunetv2
 antspyx==0.5.4
     # via intensity-normalization
+appnope==0.1.4
+    # via ipykernel
 argparse==1.4.0
     # via unittest2
+asttokens==3.0.0
+    # via stack-data
 astunparse==1.6.3
-    # via tensorflow
+    # via tensorflow-macos
 batchgenerators==0.25.1
     # via
     #   acvl-utils
@@ -35,18 +39,28 @@ certifi==2025.1.31
     # via requests
 charset-normalizer==3.4.1
     # via requests
+comm==0.2.2
+    # via
+    #   ipykernel
+    #   ipywidgets
 connected-components-3d==3.23.0
     # via acvl-utils
 contourpy==1.3.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
+debugpy==1.8.13
+    # via ipykernel
+decorator==5.2.1
+    # via ipython
 dicom2nifti==2.5.1
     # via nnunetv2
 dynamic-network-architectures==0.3.1
     # via nnunetv2
 einops==0.8.1
     # via nnunetv2
+executing==2.2.0
+    # via stack-data
 fft-conv-pytorch==1.2.0
     # via batchgeneratorsv2
 filelock==3.17.0
@@ -54,7 +68,7 @@ filelock==3.17.0
     #   gdown
     #   torch
 flatbuffers==25.2.10
-    # via tensorflow
+    # via tensorflow-macos
 fonttools==4.56.0
     # via matplotlib
 fsspec==2025.2.0
@@ -62,7 +76,7 @@ fsspec==2025.2.0
 future==1.0.0
     # via batchgenerators
 gast==0.6.0
-    # via tensorflow
+    # via tensorflow-macos
 gdown==5.2.0
     # via -r requirements.in
 google-auth==2.38.0
@@ -72,15 +86,15 @@ google-auth==2.38.0
 google-auth-oauthlib==1.0.0
     # via tensorboard
 google-pasta==0.2.0
-    # via tensorflow
+    # via tensorflow-macos
 graphviz==0.20.3
     # via nnunetv2
 grpcio==1.70.0
     # via
     #   tensorboard
-    #   tensorflow
+    #   tensorflow-macos
 h5py==3.13.0
-    # via tensorflow
+    # via tensorflow-macos
 idna==3.10
     # via requests
 imagecodecs==2024.12.30
@@ -88,6 +102,16 @@ imagecodecs==2024.12.30
 imageio==2.37.0
     # via scikit-image
 intensity-normalization[ants]==2.2.4
+    # via -r requirements.in
+ipykernel==6.29.5
+    # via -r requirements.in
+ipython==9.0.2
+    # via
+    #   ipykernel
+    #   ipywidgets
+ipython-pygments-lexers==1.1.1
+    # via ipython
+ipywidgets==8.1.5
     # via -r requirements.in
 itk==5.4.2.post1
     # via itk-elastix
@@ -113,18 +137,28 @@ itk-registration==5.4.2.post1
     # via itk
 itk-segmentation==5.4.2.post1
     # via itk
+jedi==0.19.2
+    # via ipython
 jinja2==3.1.6
     # via torch
 joblib==1.4.2
     # via scikit-learn
+jupyter-client==8.6.3
+    # via ipykernel
+jupyter-core==5.7.2
+    # via
+    #   ipykernel
+    #   jupyter-client
+jupyterlab-widgets==3.0.13
+    # via ipywidgets
 keras==2.14.0
-    # via tensorflow
+    # via tensorflow-macos
 kiwisolver==1.4.8
     # via matplotlib
 lazy-loader==0.4
     # via scikit-image
 libclang==18.1.1
-    # via tensorflow
+    # via tensorflow-macos
 linecache2==1.0.0
     # via traceback2
 markdown==3.7
@@ -138,14 +172,20 @@ matplotlib==3.10.1
     #   antspyx
     #   nnunetv2
     #   seaborn
+matplotlib-inline==0.1.7
+    # via
+    #   ipykernel
+    #   ipython
 ml-dtypes==0.2.0
-    # via tensorflow
+    # via tensorflow-macos
 mpmath==1.3.0
     # via sympy
 msgpack==1.1.0
     # via blosc2
 ndindex==1.9.2
     # via blosc2
+nest-asyncio==1.6.0
+    # via ipykernel
 networkx==3.4.2
     # via
     #   scikit-image
@@ -193,20 +233,21 @@ numpy==1.26.4
     #   seaborn
     #   statsmodels
     #   tensorboard
-    #   tensorflow
+    #   tensorflow-macos
     #   tifffile
 oauthlib==3.2.2
     # via requests-oauthlib
 opt-einsum==3.4.0
-    # via tensorflow
+    # via tensorflow-macos
 packaging==24.2
     # via
+    #   ipykernel
     #   lazy-loader
     #   matplotlib
     #   nibabel
     #   scikit-image
     #   statsmodels
-    #   tensorflow
+    #   tensorflow-macos
 pandas==2.2.3
     # via
     #   -r requirements.in
@@ -215,8 +256,12 @@ pandas==2.2.3
     #   nnunetv2
     #   seaborn
     #   statsmodels
+parso==0.8.4
+    # via jedi
 patsy==1.0.1
     # via statsmodels
+pexpect==4.9.0
+    # via ipython
 pillow==11.1.0
     # via
     #   antspyx
@@ -226,11 +271,21 @@ pillow==11.1.0
     #   matplotlib
     #   scikit-image
 platformdirs==4.3.6
-    # via blosc2
+    # via
+    #   blosc2
+    #   jupyter-core
+prompt-toolkit==3.0.50
+    # via ipython
 protobuf==4.25.6
     # via
     #   tensorboard
-    #   tensorflow
+    #   tensorflow-macos
+psutil==7.0.0
+    # via ipykernel
+ptyprocess==0.7.0
+    # via pexpect
+pure-eval==0.2.3
+    # via stack-data
 py-cpuinfo==9.0.0
     # via blosc2
 pyasn1==0.6.1
@@ -243,6 +298,10 @@ pydicom==2.4.4
     # via
     #   dicom2nifti
     #   intensity-normalization
+pygments==2.19.1
+    # via
+    #   ipython
+    #   ipython-pygments-lexers
 pymedio==0.2.14
     # via intensity-normalization
 pyparsing==3.2.1
@@ -251,6 +310,7 @@ pysocks==1.7.1
     # via requests
 python-dateutil==2.9.0.post0
     # via
+    #   jupyter-client
     #   matplotlib
     #   pandas
 python-gdcm==3.0.24.1
@@ -261,6 +321,10 @@ pyyaml==6.0.2
     # via
     #   antspyx
     #   yacs
+pyzmq==26.2.1
+    # via
+    #   ipykernel
+    #   jupyter-client
 requests[socks]==2.32.3
     # via
     #   antspyx
@@ -311,10 +375,12 @@ six==1.17.0
     #   google-pasta
     #   python-dateutil
     #   tensorboard
-    #   tensorflow
+    #   tensorflow-macos
     #   unittest2
 soupsieve==2.6
     # via beautifulsoup4
+stack-data==0.6.3
+    # via ipython
 statsmodels==0.14.4
     # via
     #   antspyx
@@ -322,19 +388,19 @@ statsmodels==0.14.4
 sympy==1.13.1
     # via torch
 tensorboard==2.14.1
-    # via tensorflow
+    # via tensorflow-macos
 tensorboard-data-server==0.7.2
     # via tensorboard
 tensorflow==2.14.0
     # via -r requirements.in
 tensorflow-estimator==2.14.0
-    # via tensorflow
+    # via tensorflow-macos
 tensorflow-io-gcs-filesystem==0.37.1
-    # via tensorflow
-tensorflow==2.14.0
+    # via tensorflow-macos
+tensorflow-macos==2.14.0
     # via tensorflow
 termcolor==2.5.0
-    # via tensorflow
+    # via tensorflow-macos
 threadpoolctl==3.5.0
     # via
     #   batchgenerators
@@ -350,6 +416,10 @@ torch==2.6.0
     #   dynamic-network-architectures
     #   fft-conv-pytorch
     #   nnunetv2
+tornado==6.4.2
+    # via
+    #   ipykernel
+    #   jupyter-client
 tqdm==4.67.1
     # via
     #   -r requirements.in
@@ -357,11 +427,20 @@ tqdm==4.67.1
     #   nnunetv2
 traceback2==1.4.0
     # via unittest2
+traitlets==5.14.3
+    # via
+    #   comm
+    #   ipykernel
+    #   ipython
+    #   ipywidgets
+    #   jupyter-client
+    #   jupyter-core
+    #   matplotlib-inline
 typing-extensions==4.12.2
     # via
     #   beautifulsoup4
-    #   nibabel
-    #   tensorflow
+    #   ipython
+    #   tensorflow-macos
     #   torch
 tzdata==2025.1
     # via pandas
@@ -369,14 +448,18 @@ unittest2==1.1.0
     # via batchgenerators
 urllib3==2.3.0
     # via requests
+wcwidth==0.2.13
+    # via prompt-toolkit
 webcolors==24.11.1
     # via antspyx
 werkzeug==3.1.3
     # via tensorboard
 wheel==0.45.1
     # via astunparse
+widgetsnbextension==4.0.13
+    # via ipywidgets
 wrapt==1.14.1
-    # via tensorflow
+    # via tensorflow-macos
 yacs==0.1.8
     # via nnunetv2
 
