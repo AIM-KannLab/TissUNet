@@ -67,16 +67,18 @@ export nnUNet_preprocessed="$(pwd)/<any_path_really_this_stuff_is_not_used_but_s
 export nnUNet_results="$(pwd)/<relative_path_to_nnUNet_results>"
 python predict.py -i <in_dir> \
                   -o <out_dir> \
-                  -d 003 -c 3d_fullres -f all -device <gpu/cpu>
+                  -d <cpu/cuda> \
+                 [--cleanup]
 ```
 Example:
 ```
 export nnUNet_raw="$(pwd)/nnUNet_raw" # This path does not exist lol
 export nnUNet_preprocessed="$(pwd)/nnUNet_preprocessed"
 export nnUNet_results="$(pwd)/nnUNet_results"
-nnUNetv2_predict -i mr_pre \
-                 -o preds \
-                 -d 003 -c 3d_fullres -f all -device gpu
+python predict.py -i mr_pre \
+                  -o preds \
+                  -d cuda \
+                  --cleanup
 ```
 
 ## Predict Slices

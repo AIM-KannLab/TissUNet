@@ -18,7 +18,7 @@ def parse_args():
         raise ValueError('Input path does not exist')
     if not args.output:
         args.output = os.path.dirname(os.path.normpath(args.input))
-    if args.device not in ['cpu', 'gpu']:
+    if args.device not in ['cpu', 'cuda']:
         raise ValueError('Device must be either cpu or gpu')
     return args
 
