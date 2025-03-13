@@ -48,48 +48,60 @@ BCP-431010-64mo-v1_13_T1w.nii,9,M
 IXI621-Guys-1100-T1.nii,12,F
 ```
 
+## Pipeline Visualization
+![pipeline](pipeline.png "Pipeline")
+
 # Step 1: Preprocess
 The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified it will overwrite files in `<in_dir>`.
 ```
-python preprocess.py -i <in_dir> [-o <out_dir>]
+python preprocess.py -i <in_dir> [-o <out_dir>] [--register]
 ```
 Example:
 ```
-python preprocess.py -i mr -o mr_pre
+python preprocess.py -i mr -o mr_pre --register
 ```
 
 # Step 2: Predict
+## Predict TissUNet
 This will run TissUNet on all `.nii.gz` files in `<in_dir>` and write results in `<out_dir>`.
 ```
 export nnUNet_raw="$(pwd)/<any_path_really_this_stuff_is_required_even_though_not_used>"
 export nnUNet_preprocessed="$(pwd)/<any_path_really_this_stuff_is_not_used_but_suppresses_the_warning>"
 export nnUNet_results="$(pwd)/<relative_path_to_nnUNet_results>"
-nnUNetv2_predict -i <in_dir> \
-                 -o <out_dir> \
-                 -d 003 -c 3d_fullres -f all -device <gpu/cpu>
+python predict.py -i <in_dir> \
+                  -o <out_dir> \
+                  -d <cpu/cuda> \
+                 [--cleanup]
 ```
 Example:
 ```
 export nnUNet_raw="$(pwd)/nnUNet_raw" # This path does not exist lol
 export nnUNet_preprocessed="$(pwd)/nnUNet_preprocessed"
 export nnUNet_results="$(pwd)/nnUNet_results"
-nnUNetv2_predict -i mr_pre \
-                 -o preds \
-                 -d 003 -c 3d_fullres -f all -device gpu
+python predict.py -i mr_pre \
+                  -o preds \
+                  -d cuda \
+                  --cleanup
 ```
 
-# Step 3: Predict Slices
-This will run DenseNet slice prediction on all `.nii.gz` files in `<in_dir>`, write those values to `meta.csv` in `slice_label` column and save it in the `<out_dir>/meta.csv`.
+## Predict Slices
+This will run DenseNet slice prediction on all `.nii.gz` files in `<in_dir>` using `<in_meta_path>` write those values in `slice_label` column and save it in the `<out_meta_path>`.
 ```
-python predict_slices.py -i <in_dir> -o <out_dir>
+python predict_slices.py -i <in_dir> \
+                         -mi <in_meta_path> \
+                         -mo <out_meta_path>
+                         [--model_weight_path_selection <custom path to model weights>]
+                         [--cuda_visible_devices <custom device incices. defaults to 0>]
 ```
 Example:
 ```
-python predict_slices.py -i mr_pre -o preds
+python predict_slices.py -i mr_pre \
+                         -mi mr_pre/meta.csv \
+                         -mo preds/meta.csv
 ```
 
-# Step 4: Post-process
-The following script will filter brain mask (retain only the largest connected componnent) and deface if required
+# Step 3: Post-process
+The following script will filter brain mask (retain only the largest connected componnent) and deface if `--deface` flag is specified.
 ```
 python postprocess.py -mi <mr_input_path> \
                       -pi <preds_input_path> \
@@ -111,7 +123,7 @@ python postprocess.py -mi mr_pre \
                       --deface
 ```
 
-# Step 5: Compute metrics
+# Step 4: Compute metrics
 To compute metrics for a single directory of predictions use:
 ```
 python compute_metrics.py -pi <preds_input_path> \
@@ -119,8 +131,11 @@ python compute_metrics.py -pi <preds_input_path> \
 ```
 Example:
 ```
-python compute_metrics.py -pi preds \
-                          -mo preds/metrics.csv
+python compute_metrics.py -pi preds_post \
+                          -mo preds_post/metrics.csv
+
+python compute_metrics.py -pi preds_post_def \
+                          -mo preds_post_def/metrics.csv
 ```
 
 # Known Issues

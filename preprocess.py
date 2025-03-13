@@ -4,12 +4,13 @@ import argparse
 import pandas as pd
 import nibabel as nib
 import SimpleITK as sitk
-from nibabel.orientations import aff2axcodes, axcodes2ornt, ornt_transform
+import itk
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
     parser.add_argument('--output', '-o', type=str, required=False, help='Output directory (optional)')
+    parser.add_argument('--register', action='store_true', help='Register the MRI to the template')
     args = parser.parse_args()
     if not args.output:
         args.output = args.input
@@ -40,58 +41,76 @@ def read_nii_with_fix(file_path: str):
             print(f'\033[91mError loading {file_path}: {e}\033[0m')
             print()
     return file
-
-def reorient_to_lpi(file: nib.Nifti1Image):
-    """
-    Reorients a NIfTI file to LPI (Left-Posterior-Inferior) orientation.
-
-    :param file: The NIfTI image to be reoriented.
-    :type file: nib.Nifti1Image
-    :return: The reoriented NIfTI image.
-    :rtype: nib.Nifti1Image
-    """
-    original_ornt = axcodes2ornt(aff2axcodes(file.affine))
-    target_ornt = axcodes2ornt(('L', 'P', 'I'))
-    transform = ornt_transform(original_ornt, target_ornt)
-    reoriented_file = file.as_reoriented(transform)
-    return reoriented_file
-
-def main(args):
-    os.makedirs(args.output, exist_ok=True)
-    filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
-    
-    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    print('🔎 Checking meta.csv')
+            
+def check_meta_columns(meta):
     if not all([col in meta.columns for col in ['filename', 'age', 'sex']]):
         raise ValueError('meta.csv must contain filename, age and sex columns')
+    
+def get_nnunet_filename(file_name):
+    output_file_name = None
+    if file_name.endswith('_0000.nii.gz'):
+        output_file_name = file_name
+    elif file_name.endswith('.nii.gz'):
+        output_file_name = file_name.replace('.nii.gz', '_0000.nii.gz')
+    elif file_name.endswith('.nii'):
+        output_file_name = file_name.replace('.nii', '_0000.nii.gz')
+    return output_file_name
+
+# function to select the correct MRI template based on the age  
+def select_template_based_on_age(age):
+    # MNI templates 
+    age_ranges = {"golden_image/mni_templates/nihpd_asym_04.5-08.5_t1w.nii": {"min_age":3,  "max_age":7.999},
+                  "golden_image/mni_templates/nihpd_asym_07.5-13.5_t1w.nii": {"min_age":8,  "max_age":13.99999},
+                  "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":35}}
+    for golden_file_path, age_values in age_ranges.items():
+        if age_values['min_age'] <= int(age) and int(age) <= age_values['max_age']: 
+            return golden_file_path
+   
+# register the MRI to the template     
+def register_to_template(input_image_path, output_image_path, fixed_image_path):
+    fixed_image = itk.imread(fixed_image_path, itk.F)
+
+    parameter_object = itk.ParameterObject.New()
+    parameter_object.AddParameterFile('golden_image/mni_templates/Parameters_Rigid.txt')
+    
+    moving_image = itk.imread(input_image_path, itk.F)
+    result_image, result_transform_parameters = itk.elastix_registration_method(
+        fixed_image, moving_image,
+        parameter_object=parameter_object,
+        log_to_console=False)
+    itk.imwrite(result_image, output_image_path)
+    
+def main(args):
+    os.makedirs(args.output, exist_ok=True)
+    # Process Meta
+    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+    print('🔎 Checking meta.csv')
+    check_meta_columns(meta=meta)    
+    filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
     for filename in filenames:
         if filename not in meta['filename'].values:
-            raise ValueError(f'{samplename} not found in meta.csv')
+            raise ValueError(f'{filename} not found in meta.csv')
     meta['filename'] = meta['filename'].apply(lambda x: x.replace('.nii.gz', '_0000.nii.gz').replace('.nii', '_0000.nii.gz'))
     meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
     print('✅ meta.csv checked and saved')
-    # Preprocessing filenames
-    print('🔄 Preprocessing filenames')
-    print()
+    # Process NII
+    print('🔄 Preprocessing filenames\n')
     for i, file_name in enumerate(sorted(filenames)):
         file_path = os.path.join(args.input, file_name)
         print(f"[{i+1}/{len(filenames)}] Processing {file_path}...")
         file = read_nii_with_fix(file_path)
-        if aff2axcodes(file.affine) != ('L', 'P', 'I'):
-            print(f"\tFound orientation {aff2axcodes(file.affine)}. Reorienting to LPI...")
-            file = reorient_to_lpi(file)
-        else:
-            print("\tAlready LPI")
-        
-        output_file_name = None
-        if file_name.endswith('_0000.nii.gz'):
-            output_file_name = file_name
-        elif file_name.endswith('.nii.gz'):
-            output_file_name = file_name.replace('.nii.gz', '_0000.nii.gz')
-        elif file_name.endswith('.nii'):
-            output_file_name = file_name.replace('.nii', '_0000.nii.gz')
+
+        output_file_name = get_nnunet_filename(file_name)
         output_file_path = os.path.join(args.output, output_file_name)
         nib.save(file, output_file_path)
+        
+        # Register to the template
+        if args.register:
+            print(f"\tRegistering to the template...")
+            age = meta[meta['filename'] == output_file_name]['age'].values[0]
+            template_path = select_template_based_on_age(age)
+            register_to_template(output_file_path, output_file_path, template_path)
+        
         print(f"\tSaved to {output_file_path}")
         print()
     print('🎉 Preprocessing Done!')
