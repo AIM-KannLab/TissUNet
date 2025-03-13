@@ -202,5 +202,16 @@ if __name__ == '__main__':
         if removed_count > 0:
             print(f"ℹ️ Removed {removed_count} rows without Slice label")
     
+    # Create ID column from filename (removing .nii.gz suffix)
+    meta['ID'] = meta['Filename'].str.replace('.nii.gz', '')
+    
+    # Rename columns
+    meta = meta.rename(columns={'AGE_M': 'Age', 'SEX': 'Sex'})
+    
+    # Remove unwanted columns
+    meta = meta.drop(columns=['SCAN_PATH', 'Filename'], errors='ignore')
+    # Convert to integer
+    meta['Slice label'] = meta['Slice label'].astype(int)
+    
     meta.to_csv(os.path.join(args.output, f'metadata_{args.dataset}.csv'), index=False)
     print(f'✅ metadata_{args.dataset}.csv saved with slice labels')

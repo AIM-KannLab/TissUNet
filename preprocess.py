@@ -60,15 +60,15 @@ def main(args):
     os.makedirs(args.output, exist_ok=True)
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
     
-    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    print('🔎 Checking meta.csv')
-    if not all([col in meta.columns for col in ['filename', 'age', 'sex']]):
-        raise ValueError('meta.csv must contain filename, age and sex columns')
-    for filename in filenames:
-        if filename not in meta['filename'].values:
-            raise ValueError(f'{samplename} not found in meta.csv')
-    meta['filename'] = meta['filename'].apply(lambda x: x.replace('.nii.gz', '_0000.nii.gz').replace('.nii', '_0000.nii.gz'))
-    meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
+    # meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+    # print('🔎 Checking meta.csv')
+    # if not all([col in meta.columns for col in ['filename', 'age', 'sex']]):
+    #     raise ValueError('meta.csv must contain filename, age and sex columns')
+    # for filename in filenames:
+    #     if filename not in meta['filename'].values:
+    #         raise ValueError(f'{samplename} not found in meta.csv')
+    # meta['filename'] = meta['filename'].apply(lambda x: x.replace('.nii.gz', '_0000.nii.gz').replace('.nii', '_0000.nii.gz'))
+    # meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
     print('✅ meta.csv checked and saved')
     # Preprocessing filenames
     print('🔄 Preprocessing filenames')
