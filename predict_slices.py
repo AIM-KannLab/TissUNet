@@ -27,6 +27,10 @@ def parse_args():
                         help='Path to the model weights for selection. Default: model_weights/densenet_itmt2.hdf5')
     parser.add_argument('--cuda_visible_devices', type=str, default="0",
                         help='CUDA device ID to use. Default: 0')
+    parser.add_argument('--dataset', '-d', type=str, required=False, 
+                         help='Dataset name to use in output filename (metadata_{dataset}.csv)')                          
+    parser.add_argument('--temp_path', '-tp', type=str, default="./temp",
+                        help='Path for temporary files. Default: ./temp')                         
     args = parser.parse_args()
     if not os.path.exists(args.input):
         raise ValueError(f'Input path "{args.input}" does not exist')
@@ -109,16 +113,16 @@ if __name__ == '__main__':
     # Print "Found n files" where n is the number of files with emoji
     print(f"📄 Found {len(filenames)} files")
     print()
-    temp_path = os.path.join(args.input, 'temp')
+    temp_path = args.temp_path
     shutil.rmtree(temp_path, ignore_errors=True)
     os.makedirs(temp_path, exist_ok=True)
     for i, filename in enumerate(filenames):
         # try:
         print(f"[{i+1}/{len(filenames)}] Processing {filename}...")
-        row = meta[meta['filename'] == filename]
+        row = meta[meta['Filename'] == filename]
         print(row)
-        age = row['age'].values[0]
-        sex = row['sex'].values[0]
+        age = row['AGE_M'].values[0]
+        sex = row['SEX'].values[0]
         filepath = os.path.join(args.input, filename)
         
         slice_label = predict_slice(
@@ -128,7 +132,7 @@ if __name__ == '__main__':
             path_temp=temp_path,
             model_weight_path_selection=args.model_weight_path_selection, 
         )
-        meta.loc[meta['filename'] == filename, 'slice_label'] = slice_label
+        meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
         print()
         # except Exception as e:
         #     print(f"⚠️ Error processing {filename}: {str(e)}")
@@ -139,24 +143,27 @@ if __name__ == '__main__':
     # Create output directory if it doesn't exist
     os.makedirs(os.path.dirname(args.meta_output), exist_ok=True)
     
-    # Remove rows without a slice_label
-    if 'slice_label' in meta.columns:
+    # Remove rows without a Slice label
+    if 'Slice label' in meta.columns:
         original_count = len(meta)
-        meta = meta.dropna(subset=['slice_label'])
+        meta = meta.dropna(subset=['Slice label'])
         removed_count = original_count - len(meta)
         if removed_count > 0:
-            print(f"ℹ️ Removed {removed_count} rows without slice_label")
+            print(f"ℹ️ Removed {removed_count} rows without Slice label")
     
     # Create ID column from filename (removing .nii.gz suffix)
     meta['ID'] = meta['Filename'].str.replace('.nii.gz', '')
     
     # Rename columns
-    meta = meta.rename(columns={'AGE_M': 'Age', 'SEX': 'Sex'})
+    meta = meta.rename(columns={'AGE_M': 'Age', 'SEX': 'Sex', 'dataset': 'Dataset'})
     
     # Remove unwanted columns
     meta = meta.drop(columns=['SCAN_PATH', 'Filename'], errors='ignore')
     # Convert to integer
     meta['Slice label'] = meta['Slice label'].astype(int)
-    
-    meta.to_csv(os.path.join(args.output, f'metadata_{args.dataset}.csv'), index=False)
-    print(f'✅ metadata_{args.dataset}.csv saved with slice labels')
+
+    # Extract dataset name without suffix ("_reg")
+    dataset_name = args.dataset.split('_')[0] if args.dataset else "unknown"
+        
+    meta.to_csv(os.path.join(args.meta_output, f'metadata_{dataset_name}.csv'), index=False)
+    print(f'✅ metadata_{dataset_name}.csv saved with slice labels')
