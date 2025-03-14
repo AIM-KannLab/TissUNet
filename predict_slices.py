@@ -4,6 +4,8 @@ import shutil
 import argparse
 import functools
 import subprocess
+import multiprocessing
+from tqdm import tqdm
 
 import itk
 import numpy as np
@@ -30,7 +32,9 @@ def parse_args():
     parser.add_argument('--dataset', '-d', type=str, required=False, 
                          help='Dataset name to use in output filename (metadata_{dataset}.csv)')                          
     parser.add_argument('--temp_path', '-tp', type=str, default="./temp",
-                        help='Path for temporary files. Default: ./temp')                         
+                        help='Path for temporary files. Default: ./temp')
+    parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 1),
+                        help='Number of worker processes to use for multiprocessing. Default: all CPU cores')                         
     args = parser.parse_args()
     if not os.path.exists(args.input):
         raise ValueError(f'Input path "{args.input}" does not exist')
@@ -104,45 +108,145 @@ def predict_slice(age = 9,
     slice_label = get_slice_number_from_prediction(predictions)
     return slice_label
 
+# if __name__ == '__main__':
+#     args = parse_args()
+#     configure_devices(args.cuda_visible_devices)
+#     meta = pd.read_csv(args.input_meta)
+
+#     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii.gz')]
+#     # Print "Found n files" where n is the number of files with emoji
+#     print(f"📄 Found {len(filenames)} files")
+#     print()
+#     temp_path = args.temp_path
+#     shutil.rmtree(temp_path, ignore_errors=True)
+#     os.makedirs(temp_path, exist_ok=True)
+#     for i, filename in enumerate(filenames):
+#         # try:
+#         print(f"[{i+1}/{len(filenames)}] Processing {filename}...")
+#         row = meta[meta['Filename'] == filename]
+#         print(row)
+#         age = row['AGE_M'].values[0]
+#         sex = row['SEX'].values[0]
+#         filepath = os.path.join(args.input, filename)
+        
+#         slice_label = predict_slice(
+#             age=age, 
+#             sex=sex, 
+#             input_path=filepath,
+#             path_temp=temp_path,
+#             model_weight_path_selection=args.model_weight_path_selection, 
+#         )
+#         meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
+#         print()
+#         # except Exception as e:
+#         #     print(f"⚠️ Error processing {filename}: {str(e)}")
+#         #     print(f"Skipping this file and continuing with the next one.")
+#         #     print()
+#         #     continue
+
+#     # Create output directory if it doesn't exist
+#     os.makedirs(os.path.dirname(args.meta_output), exist_ok=True)
+    
+#     # Remove rows without a Slice label
+#     if 'Slice label' in meta.columns:
+#         original_count = len(meta)
+#         meta = meta.dropna(subset=['Slice label'])
+#         removed_count = original_count - len(meta)
+#         if removed_count > 0:
+#             print(f"ℹ️ Removed {removed_count} rows without Slice label")
+    
+#     # Create ID column from filename (removing .nii.gz suffix)
+#     meta['ID'] = meta['Filename'].str.replace('.nii.gz', '')
+    
+#     # Rename columns
+#     meta = meta.rename(columns={'AGE_M': 'Age', 'SEX': 'Sex', 'dataset': 'Dataset'})
+    
+#     # Remove unwanted columns
+#     meta = meta.drop(columns=['SCAN_PATH', 'Filename'], errors='ignore')
+#     # Convert to integer
+#     meta['Slice label'] = meta['Slice label'].astype(int)
+
+#     # Extract dataset name without suffix ("_reg")
+#     dataset_name = args.dataset.split('_')[0] if args.dataset else "unknown"
+        
+#     meta.to_csv(os.path.join(args.meta_output, f'metadata_{dataset_name}.csv'), index=False)
+#     print(f'✅ metadata_{dataset_name}.csv saved with slice labels')
+
+def process_file(args_tuple):
+    """Wrapper function for predict_slice to work with multiprocessing"""
+    filename, age, sex, filepath, temp_path, model_weight_path_selection, file_idx, total_files = args_tuple
+    
+    # Create a unique subfolder in temp_path for each process to avoid conflicts
+    process_temp_path = os.path.join(temp_path, f"process_{os.getpid()}")
+    os.makedirs(process_temp_path, exist_ok=True)
+    
+    print(f"[{file_idx+1}/{total_files}] Processing {filename}...")
+    try:
+        slice_label = predict_slice(
+            age=age, 
+            sex=sex, 
+            input_path=filepath,
+            path_temp=process_temp_path,
+            model_weight_path_selection=model_weight_path_selection, 
+        )
+        return filename, slice_label, None
+    except Exception as e:
+        error_message = f"⚠️ Error processing {filename}: {str(e)}"
+        return filename, None, error_message
+
 if __name__ == '__main__':
     args = parse_args()
     configure_devices(args.cuda_visible_devices)
     meta = pd.read_csv(args.input_meta)
 
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii.gz')]
-    # Print "Found n files" where n is the number of files with emoji
     print(f"📄 Found {len(filenames)} files")
     print()
+    
+    # Create temp directory
     temp_path = args.temp_path
     shutil.rmtree(temp_path, ignore_errors=True)
     os.makedirs(temp_path, exist_ok=True)
+    
+    # Prepare arguments for multiprocessing
+    process_args = []
     for i, filename in enumerate(filenames):
-        # try:
-        print(f"[{i+1}/{len(filenames)}] Processing {filename}...")
         row = meta[meta['Filename'] == filename]
-        print(row)
+        if len(row) == 0:
+            print(f"⚠️ No metadata found for {filename}, skipping...")
+            continue
+            
         age = row['AGE_M'].values[0]
         sex = row['SEX'].values[0]
         filepath = os.path.join(args.input, filename)
         
-        slice_label = predict_slice(
-            age=age, 
-            sex=sex, 
-            input_path=filepath,
-            path_temp=temp_path,
-            model_weight_path_selection=args.model_weight_path_selection, 
-        )
-        meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
-        print()
-        # except Exception as e:
-        #     print(f"⚠️ Error processing {filename}: {str(e)}")
-        #     print(f"Skipping this file and continuing with the next one.")
-        #     print()
-        #     continue
-
+        # Pack all arguments into a tuple for the process_file function
+        process_args.append((
+            filename, age, sex, filepath, temp_path, 
+            args.model_weight_path_selection, i, len(filenames)
+        ))
+    
+    # Process files in parallel
+    num_workers = min(args.num_workers, len(process_args))
+    print(f"🔄 Processing with {num_workers} workers...")
+    
+    with multiprocessing.Pool(processes=num_workers) as pool:
+        results = list(tqdm(
+            pool.imap(process_file, process_args),
+            total=len(process_args),
+            desc="Processing files"
+        ))
+    
+    # Process results
+    for filename, slice_label, error in results:
+        if error:
+            print(error)
+        else:
+            meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
+    
     # Create output directory if it doesn't exist
     os.makedirs(os.path.dirname(args.meta_output), exist_ok=True)
-    
+
     # Remove rows without a Slice label
     if 'Slice label' in meta.columns:
         original_count = len(meta)
@@ -166,4 +270,4 @@ if __name__ == '__main__':
     dataset_name = args.dataset.split('_')[0] if args.dataset else "unknown"
         
     meta.to_csv(os.path.join(args.meta_output, f'metadata_{dataset_name}.csv'), index=False)
-    print(f'✅ metadata_{dataset_name}.csv saved with slice labels')
+    print(f'✅ metadata_{dataset_name}.csv saved with slice labels')    
