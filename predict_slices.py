@@ -171,6 +171,10 @@ def predict_slice(age = 9,
         
 #     meta.to_csv(os.path.join(args.meta_output, f'metadata_{dataset_name}.csv'), index=False)
 #     print(f'✅ metadata_{dataset_name}.csv saved with slice labels')
+def get_file_name(file_path):
+    """Extract basename without any extensions from file path"""
+    return os.path.splitext(os.path.basename(file_path))[0].split(".")[0]
+
 
 def process_file(args_tuple):
     """Wrapper function for predict_slice to work with multiprocessing"""
@@ -201,23 +205,47 @@ if __name__ == '__main__':
 
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii.gz')]
     print(f"📄 Found {len(filenames)} files")
-    print()
     
     # Create temp directory
     temp_path = args.temp_path
     shutil.rmtree(temp_path, ignore_errors=True)
     os.makedirs(temp_path, exist_ok=True)
+
+    # Determine if we're processing the NYU dataset
+    is_nyu_dataset = False
+    if args.dataset and 'nyu' in args.dataset.lower():
+        is_nyu_dataset = True
+        print("🔎 Detected NYU dataset - using special filename matching for leading zeros")    
+    
+    # Add a normalized basename column to metadata for matching
+    meta['basename'] = meta['Filename'].astype(str).apply(lambda x: os.path.splitext(os.path.splitext(x)[0])[0] if x.endswith('.nii.gz') 
+                                             else (os.path.splitext(x)[0] if x.endswith('.nii') else x))
     
     # Prepare arguments for multiprocessing
     process_args = []
+    skipped_files = []
+    
     for i, filename in enumerate(filenames):
-        row = meta[meta['Filename'] == filename]
-        if len(row) == 0:
-            print(f"⚠️ No metadata found for {filename}, skipping...")
+        # Extract basename without extensions for matching
+        basename = os.path.splitext(os.path.splitext(filename)[0])[0]
+        
+        # Find matching row by basename
+        matching_rows = meta[meta['basename'] == basename]
+
+        # For NYU dataset, try matching without leading zeros if exact match fails
+        if is_nyu_dataset and len(matching_rows) == 0:
+            # Try to match removing '00' prefix from metadata filenames
+            basename_no_zeros = basename.lstrip('0')
+            metadata_no_zeros = meta['basename'].str.lstrip('0')
+            matching_rows = meta[metadata_no_zeros == basename_no_zeros]        
+        
+        if len(matching_rows) == 0:
+            print(f"⚠️ No metadata found for {filename} (basename: {basename}), skipping...")
+            skipped_files.append(filename)
             continue
             
-        age = row['AGE_M'].values[0]
-        sex = row['SEX'].values[0]
+        age = matching_rows['AGE_M'].values[0]
+        sex = matching_rows['SEX'].values[0]
         filepath = os.path.join(args.input, filename)
         
         # Pack all arguments into a tuple for the process_file function
@@ -225,6 +253,9 @@ if __name__ == '__main__':
             filename, age, sex, filepath, temp_path, 
             args.model_weight_path_selection, i, len(filenames)
         ))
+        
+    if skipped_files:
+        print(f"⚠️ Skipped {len(skipped_files)} files due to missing metadata")
     
     # Process files in parallel
     num_workers = min(args.num_workers, len(process_args))
@@ -242,7 +273,9 @@ if __name__ == '__main__':
         if error:
             print(error)
         else:
-            meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
+            # Match by basename for updating slice labels
+            basename = os.path.splitext(os.path.splitext(filename)[0])[0]
+            meta.loc[meta['basename'] == basename, 'Slice label'] = slice_label
     
     # Create output directory if it doesn't exist
     os.makedirs(os.path.dirname(args.meta_output), exist_ok=True)
@@ -255,14 +288,14 @@ if __name__ == '__main__':
         if removed_count > 0:
             print(f"ℹ️ Removed {removed_count} rows without Slice label")
     
-    # Create ID column from filename (removing .nii.gz suffix)
-    meta['ID'] = meta['Filename'].str.replace('.nii.gz', '')
+    # Create ID column from basename
+    meta['ID'] = meta['basename']
     
     # Rename columns
     meta = meta.rename(columns={'AGE_M': 'Age', 'SEX': 'Sex', 'dataset': 'Dataset'})
     
     # Remove unwanted columns
-    meta = meta.drop(columns=['SCAN_PATH', 'Filename'], errors='ignore')
+    meta = meta.drop(columns=['SCAN_PATH', 'Filename', 'basename'], errors='ignore')
     # Convert to integer
     meta['Slice label'] = meta['Slice label'].astype(int)
 
@@ -270,4 +303,4 @@ if __name__ == '__main__':
     dataset_name = args.dataset.split('_')[0] if args.dataset else "unknown"
         
     meta.to_csv(os.path.join(args.meta_output, f'metadata_{dataset_name}.csv'), index=False)
-    print(f'✅ metadata_{dataset_name}.csv saved with slice labels')    
+    print(f'✅ metadata_{dataset_name}.csv saved with slice labels')   
