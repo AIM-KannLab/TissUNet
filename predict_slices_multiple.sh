@@ -31,10 +31,10 @@ metadata_paths=(
 )
 
 datasets=(
-    # "pixar_reg" # done    
+    "pixar_reg" # done    
     # "28_reg"
-    "long579_reg"
-    "abide_registered"
+    # "long579_reg"
+    # "abide_registered"
     #"PediatricMRI_DEMOGRAPHICS_reg_clamp" #done
     #"dexa_reg" #done
     #"aomic_reg" #done
@@ -46,28 +46,10 @@ datasets=(
     #"healthy_adults_nihm_reg" # done
     #"pings_registered" # done
     #"baby_reg" # done
-    # "nyu_reg" # done
+    "nyu_reg" # done
     #"IXI_reg" # done 
     #"sald_reg" # done
 )
-
-# # List of dataset names
-# datasets=(
-#     "pixar_iter"
-#     # "abcd_new2023"
-#     # "abcd_old"
-#     # "WU1200"
-#     #"calgary" # done
-#     # "pixar" # done
-#     # "icbm"
-#     # "healthy_adults_nihm"
-#     # "pings"
-#     # "baby"
-#     # "nyu"
-#     # "IXI"
-#     # "sald"
-#     # "aomic"
-# )
 
 # Process each dataset
 for dataset in "${datasets[@]}"; do

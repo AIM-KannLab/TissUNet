@@ -33,7 +33,7 @@ def parse_args():
                          help='Dataset name to use in output filename (metadata_{dataset}.csv)')                          
     parser.add_argument('--temp_path', '-tp', type=str, default="./temp",
                         help='Path for temporary files. Default: ./temp')
-    parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 1),
+    parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 20),
                         help='Number of worker processes to use for multiprocessing. Default: all CPU cores')                         
     args = parser.parse_args()
     if not os.path.exists(args.input):
@@ -108,69 +108,6 @@ def predict_slice(age = 9,
     slice_label = get_slice_number_from_prediction(predictions)
     return slice_label
 
-# if __name__ == '__main__':
-#     args = parse_args()
-#     configure_devices(args.cuda_visible_devices)
-#     meta = pd.read_csv(args.input_meta)
-
-#     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii.gz')]
-#     # Print "Found n files" where n is the number of files with emoji
-#     print(f"📄 Found {len(filenames)} files")
-#     print()
-#     temp_path = args.temp_path
-#     shutil.rmtree(temp_path, ignore_errors=True)
-#     os.makedirs(temp_path, exist_ok=True)
-#     for i, filename in enumerate(filenames):
-#         # try:
-#         print(f"[{i+1}/{len(filenames)}] Processing {filename}...")
-#         row = meta[meta['Filename'] == filename]
-#         print(row)
-#         age = row['AGE_M'].values[0]
-#         sex = row['SEX'].values[0]
-#         filepath = os.path.join(args.input, filename)
-        
-#         slice_label = predict_slice(
-#             age=age, 
-#             sex=sex, 
-#             input_path=filepath,
-#             path_temp=temp_path,
-#             model_weight_path_selection=args.model_weight_path_selection, 
-#         )
-#         meta.loc[meta['Filename'] == filename, 'Slice label'] = slice_label
-#         print()
-#         # except Exception as e:
-#         #     print(f"⚠️ Error processing {filename}: {str(e)}")
-#         #     print(f"Skipping this file and continuing with the next one.")
-#         #     print()
-#         #     continue
-
-#     # Create output directory if it doesn't exist
-#     os.makedirs(os.path.dirname(args.meta_output), exist_ok=True)
-    
-#     # Remove rows without a Slice label
-#     if 'Slice label' in meta.columns:
-#         original_count = len(meta)
-#         meta = meta.dropna(subset=['Slice label'])
-#         removed_count = original_count - len(meta)
-#         if removed_count > 0:
-#             print(f"ℹ️ Removed {removed_count} rows without Slice label")
-    
-#     # Create ID column from filename (removing .nii.gz suffix)
-#     meta['ID'] = meta['Filename'].str.replace('.nii.gz', '')
-    
-#     # Rename columns
-#     meta = meta.rename(columns={'AGE_M': 'Age', 'SEX': 'Sex', 'dataset': 'Dataset'})
-    
-#     # Remove unwanted columns
-#     meta = meta.drop(columns=['SCAN_PATH', 'Filename'], errors='ignore')
-#     # Convert to integer
-#     meta['Slice label'] = meta['Slice label'].astype(int)
-
-#     # Extract dataset name without suffix ("_reg")
-#     dataset_name = args.dataset.split('_')[0] if args.dataset else "unknown"
-        
-#     meta.to_csv(os.path.join(args.meta_output, f'metadata_{dataset_name}.csv'), index=False)
-#     print(f'✅ metadata_{dataset_name}.csv saved with slice labels')
 def get_file_name(file_path):
     """Extract basename without any extensions from file path"""
     return os.path.splitext(os.path.basename(file_path))[0].split(".")[0]
@@ -227,20 +164,23 @@ if __name__ == '__main__':
     
     for i, filename in enumerate(filenames):
         # Extract basename without extensions for matching
-        basename = os.path.splitext(os.path.splitext(filename)[0])[0]
+        basename = os.path.splitext(os.path.splitext(filename)[0])[0]  # Remove .nii.gz
+        basename_last_part = os.path.basename(basename)
         
         # Find matching row by basename
-        matching_rows = meta[meta['basename'] == basename]
+        matching_rows = meta[meta['basename'] == basename_last_part]
 
         # For NYU dataset, try matching without leading zeros if exact match fails
         if is_nyu_dataset and len(matching_rows) == 0:
-            # Try to match removing '00' prefix from metadata filenames
-            basename_no_zeros = basename.lstrip('0')
+            basename_no_zeros = basename_last_part.lstrip('0')
             metadata_no_zeros = meta['basename'].str.lstrip('0')
-            matching_rows = meta[metadata_no_zeros == basename_no_zeros]        
+            matching_mask = metadata_no_zeros == basename_no_zeros
+            if any(matching_mask):
+                matching_rows = meta[matching_mask]
+                print(f"✓ Found metadata match for {filename} using zero-stripping")
         
         if len(matching_rows) == 0:
-            print(f"⚠️ No metadata found for {filename} (basename: {basename}), skipping...")
+            print(f"⚠️ No metadata match found for {filename}, skipping")
             skipped_files.append(filename)
             continue
             
@@ -269,13 +209,42 @@ if __name__ == '__main__':
         ))
     
     # Process results
+    # for filename, slice_label, error in results:
+    #     if error:
+    #         print(error)
+    #     else:
+    #         # Match by basename for updating slice labels
+    #         basename = os.path.splitext(os.path.splitext(filename)[0])[0]
+    #         meta.loc[meta['basename'] == basename, 'Slice label'] = slice_label
+    # Process results
     for filename, slice_label, error in results:
         if error:
             print(error)
         else:
             # Match by basename for updating slice labels
-            basename = os.path.splitext(os.path.splitext(filename)[0])[0]
-            meta.loc[meta['basename'] == basename, 'Slice label'] = slice_label
+            basename = os.path.splitext(os.path.splitext(filename)[0])[0]  # Remove .nii.gz
+            
+            # Try direct matching first
+            matching_rows = meta[meta['basename'] == basename]
+            
+            # For NYU dataset, try matching without leading zeros if exact match fails
+            if is_nyu_dataset and len(matching_rows) == 0:
+                basename_no_zeros = basename.lstrip('0')
+                metadata_no_zeros = meta['basename'].str.lstrip('0')
+                matching_mask = metadata_no_zeros == basename_no_zeros
+                if any(matching_mask):
+                    # Update rows where the no-zeros basename matches
+                    meta.loc[matching_mask, 'Slice label'] = slice_label
+                    print(f"✓ Matched {filename} using zero-stripping")
+                    continue
+            
+            if len(matching_rows) > 0:
+                meta.loc[meta['basename'] == basename, 'Slice label'] = slice_label
+                print(f"✓ Matched {filename}")
+            else:
+                print(f"⚠️ No metadata match found for {filename} after processing")
+                
+                    
     
     # Create output directory if it doesn't exist
     os.makedirs(os.path.dirname(args.meta_output), exist_ok=True)
