@@ -31,7 +31,7 @@ metadata_paths=(
 )
 
 datasets=(
-    "pixar_reg" # done    
+    # "pixar_reg" # done    
     # "28_reg"
     # "long579_reg"
     # "abide_registered"
@@ -42,11 +42,11 @@ datasets=(
     # "abcd_old_reg" #done
     #"WU1200_reg" #done
     # "calgary_super_reg" # done
-    #"icbm_reg" # done
+    "icbm_reg" # done
     #"healthy_adults_nihm_reg" # done
     #"pings_registered" # done
     #"baby_reg" # done
-    "nyu_reg" # done
+    # "nyu_reg" # done
     #"IXI_reg" # done 
     #"sald_reg" # done
 )

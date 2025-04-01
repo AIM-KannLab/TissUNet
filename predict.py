@@ -76,7 +76,7 @@ def get_orientation(file: nib.Nifti1Image):
 
 def main(args):
     temp_mri_path = os.path.join(args.input, 'temp')
-    os.makedirs(temp_mri_path, exist_ok=True)
+    os.makedirs(temp_mri_path, exist_ok=True) 
     
     # Remember orientations for each file that ends with _0000.nii.gz
     orientations = {}

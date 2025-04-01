@@ -10,7 +10,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
     parser.add_argument('--output', '-o', type=str, required=False, help='Output directory (optional)')
-    parser.add_argument('--register', action='store_true', help='Register the MRI to the template')
+    #parser.add_argument('--register', action='store_true', help='Register the MRI to the template')
     args = parser.parse_args()
     if not args.output:
         args.output = args.input
@@ -83,16 +83,16 @@ def register_to_template(input_image_path, output_image_path, fixed_image_path):
 def main(args):
     os.makedirs(args.output, exist_ok=True)
     # Process Meta
-    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    print('🔎 Checking meta.csv')
-    check_meta_columns(meta=meta)    
+    # meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+    # print('🔎 Checking meta.csv')
+    # check_meta_columns(meta=meta)    
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
-    for filename in filenames:
-        if filename not in meta['filename'].values:
-            raise ValueError(f'{filename} not found in meta.csv')
-    meta['filename'] = meta['filename'].apply(lambda x: x.replace('.nii.gz', '_0000.nii.gz').replace('.nii', '_0000.nii.gz'))
-    meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
-    print('✅ meta.csv checked and saved')
+    # for filename in filenames:
+    #     if filename not in meta['filename'].values:
+    #         raise ValueError(f'{filename} not found in meta.csv')
+    # meta['filename'] = meta['filename'].apply(lambda x: x.replace('.nii.gz', '_0000.nii.gz').replace('.nii', '_0000.nii.gz'))
+    # meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
+    # print('✅ meta.csv checked and saved')
     # Process NII
     print('🔄 Preprocessing filenames\n')
     for i, file_name in enumerate(sorted(filenames)):
@@ -105,11 +105,11 @@ def main(args):
         nib.save(file, output_file_path)
         
         # Register to the template
-        if args.register:
-            print(f"\tRegistering to the template...")
-            age = meta[meta['filename'] == output_file_name]['age'].values[0]
-            template_path = select_template_based_on_age(age)
-            register_to_template(output_file_path, output_file_path, template_path)
+        # if args.register:
+        #     print(f"\tRegistering to the template...")
+        #     age = meta[meta['filename'] == output_file_name]['age'].values[0]
+        #     template_path = select_template_based_on_age(age)
+        #     register_to_template(output_file_path, output_file_path, template_path)
         
         print(f"\tSaved to {output_file_path}")
         print()
