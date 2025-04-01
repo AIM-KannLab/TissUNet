@@ -33,7 +33,7 @@ def parse_args():
                          help='Dataset name to use in output filename (metadata_{dataset}.csv)')                          
     parser.add_argument('--temp_path', '-tp', type=str, default="./temp",
                         help='Path for temporary files. Default: ./temp')
-    parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 20),
+    parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 2),
                         help='Number of worker processes to use for multiprocessing. Default: all CPU cores')                         
     args = parser.parse_args()
     if not os.path.exists(args.input):
