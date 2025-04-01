@@ -8,6 +8,7 @@ mr_*
 ct*
 data*
 preds*
+nnUNet_results*
 
 test.ipynb
 imea_results.csv

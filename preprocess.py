@@ -1,5 +1,6 @@
 # Preprocessing
 import os
+import shutil
 import argparse
 import pandas as pd
 import nibabel as nib
@@ -10,7 +11,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
     parser.add_argument('--output', '-o', type=str, required=False, help='Output directory (optional)')
-    parser.add_argument('--register', action='store_true', help='Register the MRI to the template')
+    parser.add_argument('--no-register', action='store_false', dest='register', help='Disable MRI registration')
     args = parser.parse_args()
     if not args.output:
         args.output = args.input
@@ -79,8 +80,9 @@ def register_to_template(input_image_path, output_image_path, fixed_image_path):
         parameter_object=parameter_object,
         log_to_console=False)
     itk.imwrite(result_image, output_image_path)
-    
+
 def main(args):
+    shutil.rmtree(args.output, ignore_errors=True)
     os.makedirs(args.output, exist_ok=True)
     # Process Meta
     meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
@@ -90,7 +92,7 @@ def main(args):
     for filename in filenames:
         if filename not in meta['filename'].values:
             raise ValueError(f'{filename} not found in meta.csv')
-    meta['filename'] = meta['filename'].apply(lambda x: x.replace('.nii.gz', '_0000.nii.gz').replace('.nii', '_0000.nii.gz'))
+    meta['filename'] = meta['filename'].apply(lambda x: get_nnunet_filename(x))
     meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
     print('✅ meta.csv checked and saved')
     # Process NII

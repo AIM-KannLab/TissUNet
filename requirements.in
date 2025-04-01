@@ -12,3 +12,4 @@ gdown
 intensity-normalization[ants]
 ipykernel
 ipywidgets
+requests
