@@ -63,7 +63,7 @@ python preprocess.py -i mr -o mr_pre --register
 
 # Step 2: Predict
 ## Predict TissUNet
-This will run TissUNet on all `.nii.gz` files in `<in_dir>` and write results in `<out_dir>`.
+This will run TissUNet on all `.nii.gz` files in `<in_dir>` and write results in `<out_dir>`. During the script execution, the temporary files in LPI orientation are created inside `<in_dir>`. Specify the `--cleanup` flag to automatically remove them after script completion.
 ```
 export nnUNet_raw="$(pwd)/<any_path_really_this_stuff_is_required_even_though_not_used>"
 export nnUNet_preprocessed="$(pwd)/<any_path_really_this_stuff_is_not_used_but_suppresses_the_warning>"
