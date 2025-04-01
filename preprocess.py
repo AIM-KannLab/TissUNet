@@ -1,11 +1,14 @@
 # Preprocessing
+import argparse
 import os
 import shutil
-import argparse
-import pandas as pd
-import nibabel as nib
-import SimpleITK as sitk
+import sys
+
 import itk
+import nibabel as nib
+import pandas as pd
+import SimpleITK as sitk
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
@@ -91,7 +94,8 @@ def main(args):
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
     for filename in filenames:
         if filename not in meta['filename'].values:
-            raise ValueError(f'{filename} not found in meta.csv')
+            print(f'The filename {filename} is not found in meta.csv. Please, make sure that all filenames from input directory are present in meta.csv')
+            sys.exit(1)
     meta['filename'] = meta['filename'].apply(lambda x: get_nnunet_filename(x))
     meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
     print('✅ meta.csv checked and saved')
