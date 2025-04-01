@@ -52,13 +52,13 @@ IXI621-Guys-1100-T1.nii,12,F
 ![pipeline](pipeline.png "Pipeline")
 
 # Step 1: Preprocess
-The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified it will overwrite files in `<in_dir>`.
+The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified, it will overwrite files in `<in_dir>`. Pass the `--no-register` flag if you want to omit the registration phase.
 ```
-python preprocess.py -i <in_dir> [-o <out_dir>] [--register]
+python preprocess.py -i <in_dir> [-o <out_dir>] [--no-register]
 ```
 Example:
 ```
-python preprocess.py -i mr -o mr_pre --register
+python preprocess.py -i mr -o mr_pre
 ```
 
 # Step 2: Predict

@@ -11,7 +11,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
     parser.add_argument('--output', '-o', type=str, required=False, help='Output directory (optional)')
-    parser.add_argument('--register', action='store_true', help='Register the MRI to the template')
+    parser.add_argument('--no-register', action='store_false', dest='register', help='Disable MRI registration')
     args = parser.parse_args()
     if not args.output:
         args.output = args.input
