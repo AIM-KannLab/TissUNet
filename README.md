@@ -141,6 +141,7 @@ python compute_metrics.py -pi preds_post_def \
 # Optional: Skull Thickness Estimation
 To batch process multiple datasets for the skull thickness estimation, please add the foldernames of the datasets you'd like to process under `datasets`. Our folder setup is as follows:
 
+```
 data/
 ├── 3d_outputs/
 │   └── ExampleDataset/
@@ -154,6 +155,7 @@ results/
 │   └── ExampleDataset/
 └── results_thickness/
     └── ExampleDataset/
+```
 
 ```
 bash process_thickness_estimation.sh \
