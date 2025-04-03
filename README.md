@@ -14,7 +14,7 @@ Run
 python download_weights.py
 ```
 
-You can also find weights for TissUNet by [this link](https://drive.google.com/drive/folders/18c06FU825eIsgyscO1CEbZf8jszzKJdT?usp=drive_link)
+You can also find weights for TissUNet by [this link](https://www.dropbox.com/scl/fo/nu00kaibm1dy74lt34ecx/AGX4pLbs5RO1P9dHQgjz13I?rlkey=8wz0y0wfij16q1onwipw19qhx&st=hxpz1b6j&dl=0)
 
 ## Project Structure
 Below is the sample of initial project structure.
@@ -51,7 +51,16 @@ IXI621-Guys-1100-T1.nii,12,F
 ## Pipeline Visualization
 ![pipeline](pipeline.png "Pipeline")
 
-# Step 1: Preprocess
+# Option 1: Using bash script to run the pipeline
+For convenience, you can run the entire pipeline using the provided bash script. This will execute all steps in order, from preprocessing to computing metrics.
+
+```
+source venv/bin/activate
+bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--no-register] [--cleanup]
+```
+
+# Option 2: Using individual scripts to run the pipeline
+## Step 1: Preprocess
 The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified, it will overwrite files in `<in_dir>`. Pass the `--no-register` flag if you want to omit the registration phase.
 ```
 python preprocess.py -i <in_dir> [-o <out_dir>] [--no-register]
@@ -61,8 +70,8 @@ Example:
 python preprocess.py -i mr -o mr_pre
 ```
 
-# Step 2: Predict
-## Predict TissUNet
+## Step 2: Predict
+### Predict TissUNet
 This will run TissUNet on all `.nii.gz` files in `<in_dir>` and write results in `<out_dir>`. During the script execution, the temporary files in LPI orientation are created inside `<in_dir>`. Specify the `--cleanup` flag to automatically remove them after script completion.
 ```
 export nnUNet_raw="$(pwd)/<any_path_really_this_stuff_is_required_even_though_not_used>"
@@ -84,7 +93,7 @@ python predict.py -i mr_pre \
                   --cleanup
 ```
 
-## Predict Slices
+### Predict Slices
 This will run DenseNet slice prediction on all `.nii.gz` files in `<in_dir>` using `<in_meta_path>` write those values in `slice_label` column and save it in the `<out_meta_path>`.
 ```
 python predict_slices.py -i <in_dir> \
@@ -100,7 +109,7 @@ python predict_slices.py -i mr_pre \
                          -mo preds/meta.csv
 ```
 
-# Step 3: Post-process
+## Step 3: Post-process
 The following script will filter brain mask (retain only the largest connected componnent) and deface if `--deface` flag is specified.
 ```
 python postprocess.py -mi <mr_input_path> \
@@ -123,7 +132,7 @@ python postprocess.py -mi mr_pre \
                       --deface
 ```
 
-# Step 4: Compute metrics
+## Step 4: Compute metrics
 To compute metrics for a single directory of predictions use:
 ```
 python compute_metrics.py -pi <preds_input_path> \
@@ -137,7 +146,9 @@ python compute_metrics.py -pi preds_post \
 python compute_metrics.py -pi preds_post_def \
                           -mo preds_post_def/metrics.csv
 ```
+The output CSV contains one row per NIfTI file, with columns for the file name, file path, sample name, and voxel volumes for each labeled tissue (e.g., vol_brain, vol_skull, vol_temporalis, etc.).
 
-# Known Issues
+
+## Known Issues
 - For some slices IMEA throws a warning during 2D (micro) metrics computation: `Slope is zero slope --> fractal dimension will be set to zero`.
 - For some slices the volumetrics computed by IMEA and by hand differ by a few pixels.
