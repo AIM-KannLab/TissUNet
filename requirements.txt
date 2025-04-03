@@ -327,6 +327,7 @@ pyzmq==26.2.1
     #   jupyter-client
 requests[socks]==2.32.3
     # via
+    #   -r requirements.in
     #   antspyx
     #   blosc2
     #   gdown
