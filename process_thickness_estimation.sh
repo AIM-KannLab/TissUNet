@@ -5,20 +5,22 @@
 
 # Define the datasets array (using the same list as in predict_slices_multiple.sh)
 datasets=(
-    "pixar_iter"
-    #"abcd_new2023"
-    #"abcd_old"
-    #"WU1200"
+    # "abcd_new2023"
+    # # "abcd_old"
+    # "WU1200"
     # "calgary" # done
-    # "pixar" # done
-    #"icbm"
+    "pixar" # done
+    # "icbm"
     # "healthy_adults_nihm"
+    # "PediatricMRI"
     # "pings"
     # "baby"
     # "nyu"
     # "IXI"
     # "sald"
     # "aomic"
+    # "long579"
+    # "abide"
 )
 
 # Process each dataset in the array
@@ -35,7 +37,8 @@ for dataset in "${datasets[@]}"; do
     echo "==============================================="
     
     # Run the Python script with the current dataset
-    python "$SCRIPT_PATH" --dataset "$dataset"
+    # specify the paths to the image input, metadata, csv output and plot output
+    python scripts/main_thickness_estimation.py --dataset "$dataset"
     
     # Check if the script executed successfully
     if [ $? -eq 0 ]; then
