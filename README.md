@@ -40,7 +40,7 @@ TissUNet \ <cloned repo>
     requirements.txt
 ```
 
-The `meta.csv` should contain columns `filename`, `age` and `sex` and entry for each MR file. Here is an example of `meta.csv`
+The `meta.csv` should contain columns `filename`, `age`(in years, can be float number) and `sex` and entry for each MR file. Here is an example of `meta.csv`
 ```
 filename,age,sex
 BCP-418009-53mo-v1_8_T1w.nii,6,F
@@ -152,3 +152,4 @@ The output CSV contains one row per NIfTI file, with columns for the file name, 
 ## Known Issues
 - For some slices IMEA throws a warning during 2D (micro) metrics computation: `Slope is zero slope --> fractal dimension will be set to zero`.
 - For some slices the volumetrics computed by IMEA and by hand differ by a few pixels.
+- Not tested for gestational 36-44 weeks (neonatal) MRIs. The pipeline may not work for neonatal MRIs due to differences in brain structure and segmentation.

@@ -63,8 +63,9 @@ def get_nnunet_filename(file_name):
 # function to select the correct MRI template based on the age  
 def select_template_based_on_age(age):
     # MNI templates 
-    #todo - add gestational ages
-    age_ranges = {"golden_image/mni_templates/months/00Month/BCP-00M-T1.nii.gz":{"min_age":0,   "max_age":0.99999/12}, # 0-1 month
+    #  gestational ages 36 weeks to 44 weeks (0-1 month) are included in the repo but not tested
+    age_ranges = {  ### 0 to 5 years (60 months)
+                    "golden_image/mni_templates/months/00Month/BCP-00M-T1.nii.gz":{"min_age":0,   "max_age":0.99999/12}, # 0-1 month
                     "golden_image/mni_templates/months/01Month/BCP-01M-T1.nii.gz":{"min_age":1/12,   "max_age":1.99999/12}, # 1-2 months
                     "golden_image/mni_templates/months/02Month/BCP-02M-T1.nii.gz":{"min_age":2/12,   "max_age":2.99999/12}, # 2-3 months
                     "golden_image/mni_templates/months/03Month/BCP-03M-T1.nii.gz":{"min_age":3/12,   "max_age":3.99999/12}, # 3-4 months
@@ -83,9 +84,10 @@ def select_template_based_on_age(age):
                     "golden_image/mni_templates/months/36Month/BCP-36M-T1.nii.gz":{"min_age":25/12,  "max_age":36.9999/12}, # 2.5-3 years
                     "golden_image/mni_templates/months/48Month/BCP-48M-T1.nii.gz":{"min_age":37/12,  "max_age":48.9999/12}, # 3-4 years
                     "golden_image/mni_templates/months/60Month/BCP-60M-T1.nii.gz":{"min_age":49/12,  "max_age":60.9999/12}, # 4-5 years
+                    ### 5 to 150 years
                     "golden_image/mni_templates/nihpd_asym_04.5-08.5_t1w.nii": {"min_age":5,  "max_age":7.999},
                     "golden_image/mni_templates/nihpd_asym_07.5-13.5_t1w.nii": {"min_age":8,  "max_age":13.99999},
-                    "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":35}}
+                    "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":150}}
     
     for golden_file_path, age_values in age_ranges.items():
         if age_values['min_age'] <= int(age) and int(age) <= age_values['max_age']: 
