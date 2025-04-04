@@ -138,6 +138,34 @@ python compute_metrics.py -pi preds_post_def \
                           -mo preds_post_def/metrics.csv
 ```
 
+# Optional: Skull Thickness Estimation
+To batch process multiple datasets for the skull thickness estimation, please add the foldernames of the datasets you'd like to process under `datasets`. Our folder setup is as follows:
+
+```
+data/
+├── 3d_outputs/
+│   └── ExampleDataset/
+│       ├── file1.nii.gz
+│       ├── file2.nii.gz
+│       └── file3.nii.gz
+├── supp_data/
+│   └── metadata_ExampleDataset.csv
+results/
+├── plots/
+│   └── ExampleDataset/
+└── results_thickness/
+    └── ExampleDataset/
+```
+
+```
+bash process_thickness_estimation.sh \
+-- lookup-slice-table "supp_data/metadata_$dataset.csv" \
+-- csv-output-dir "results/results_thickness/$dataset" \
+-- plot-output-dir "results/results_thickness/$dataset" \
+-- processed-image-dir "data/3d_outputs/$dataset" \
+
+```
+
 # Known Issues
 - For some slices IMEA throws a warning during 2D (micro) metrics computation: `Slope is zero slope --> fractal dimension will be set to zero`.
 - For some slices the volumetrics computed by IMEA and by hand differ by a few pixels.

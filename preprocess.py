@@ -65,7 +65,7 @@ def select_template_based_on_age(age):
     # MNI templates 
     age_ranges = {"golden_image/mni_templates/nihpd_asym_04.5-08.5_t1w.nii": {"min_age":3,  "max_age":7.999},
                   "golden_image/mni_templates/nihpd_asym_07.5-13.5_t1w.nii": {"min_age":8,  "max_age":13.99999},
-                  "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":35}}
+                  "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":100}}
     for golden_file_path, age_values in age_ranges.items():
         if age_values['min_age'] <= int(age) and int(age) <= age_values['max_age']: 
             return golden_file_path
@@ -88,9 +88,9 @@ def main(args):
     shutil.rmtree(args.output, ignore_errors=True)
     os.makedirs(args.output, exist_ok=True)
     # Process Meta
-    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    print('🔎 Checking meta.csv')
-    check_meta_columns(meta=meta)    
+    # meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+    # print('🔎 Checking meta.csv')
+    # check_meta_columns(meta=meta)    
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
     for filename in filenames:
         if filename not in meta['filename'].values:
@@ -111,11 +111,11 @@ def main(args):
         nib.save(file, output_file_path)
         
         # Register to the template
-        if args.register:
-            print(f"\tRegistering to the template...")
-            age = meta[meta['filename'] == output_file_name]['age'].values[0]
-            template_path = select_template_based_on_age(age)
-            register_to_template(output_file_path, output_file_path, template_path)
+        # if args.register:
+        #     print(f"\tRegistering to the template...")
+        #     age = meta[meta['filename'] == output_file_name]['age'].values[0]
+        #     template_path = select_template_based_on_age(age)
+        #     register_to_template(output_file_path, output_file_path, template_path)
         
         print(f"\tSaved to {output_file_path}")
         print()
