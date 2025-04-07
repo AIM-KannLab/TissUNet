@@ -63,9 +63,33 @@ def get_nnunet_filename(file_name):
 # function to select the correct MRI template based on the age  
 def select_template_based_on_age(age):
     # MNI templates 
-    age_ranges = {"golden_image/mni_templates/nihpd_asym_04.5-08.5_t1w.nii": {"min_age":3,  "max_age":7.999},
-                  "golden_image/mni_templates/nihpd_asym_07.5-13.5_t1w.nii": {"min_age":8,  "max_age":13.99999},
-                  "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":100}}
+    #  gestational ages 36 weeks to 44 weeks (0-1 month) are included in the repo but not tested
+    age_ranges = {  ### 0 to 5 years (60 months)
+                    "golden_image/mni_templates/months/00Month/BCP-00M-T1.nii.gz":{"min_age":0,   "max_age":0.99999/12}, # 0-1 month
+                    "golden_image/mni_templates/months/01Month/BCP-01M-T1.nii.gz":{"min_age":1/12,   "max_age":1.99999/12}, # 1-2 months
+                    "golden_image/mni_templates/months/02Month/BCP-02M-T1.nii.gz":{"min_age":2/12,   "max_age":2.99999/12}, # 2-3 months
+                    "golden_image/mni_templates/months/03Month/BCP-03M-T1.nii.gz":{"min_age":3/12,   "max_age":3.99999/12}, # 3-4 months
+                    "golden_image/mni_templates/months/04Month/BCP-04M-T1.nii.gz":{"min_age":4/12,   "max_age":4.99999/12}, # 4-5 months
+                    "golden_image/mni_templates/months/05Month/BCP-05M-T1.nii.gz":{"min_age":5/12,   "max_age":5.99999/12}, # 5-6 months
+                    "golden_image/mni_templates/months/06Month/BCP-06M-T1.nii.gz":{"min_age":6/12,   "max_age":6.99999/12}, # 6-7 months
+                    "golden_image/mni_templates/months/07Month/BCP-07M-T1.nii.gz":{"min_age":7/12,   "max_age":7.99999/12}, # 7-8 months
+                    "golden_image/mni_templates/months/08Month/BCP-08M-T1.nii.gz":{"min_age":8/12,   "max_age":8.99999/12}, # 8-9 months
+                    "golden_image/mni_templates/months/09Month/BCP-09M-T1.nii.gz":{"min_age":9/12,   "max_age":9.99999/12}, # 9-10 months
+                    "golden_image/mni_templates/months/10Month/BCP-10M-T1.nii.gz":{"min_age":10/12,  "max_age":10.99999/12}, # 10-11 months
+                    "golden_image/mni_templates/months/11Month/BCP-11M-T1.nii.gz":{"min_age":11/12,  "max_age":11.99999/12}, # 11-12 months
+                    "golden_image/mni_templates/months/15Month/BCP-15M-T1.nii.gz":{"min_age":12/12,  "max_age":15.999999/12}, # 12-15 months (1-1.25 years)
+                    "golden_image/mni_templates/months/18Month/BCP-18M-T1.nii.gz":{"min_age":16/12,  "max_age":18.9999/12}, 
+                    "golden_image/mni_templates/months/18Month/BCP-21M-T1.nii.gz":{"min_age":19/12,  "max_age":21.9999/12}, # 18-21 months (1.5-1.75 years)
+                    "golden_image/mni_templates/months/24Month/BCP-24M-T1.nii.gz":{"min_age":22/12,  "max_age":24.9999/12}, # 2-2.5 years
+                    "golden_image/mni_templates/months/36Month/BCP-36M-T1.nii.gz":{"min_age":25/12,  "max_age":36.9999/12}, # 2.5-3 years
+                    "golden_image/mni_templates/months/48Month/BCP-48M-T1.nii.gz":{"min_age":37/12,  "max_age":48.9999/12}, # 3-4 years
+                    "golden_image/mni_templates/months/60Month/BCP-60M-T1.nii.gz":{"min_age":49/12,  "max_age":60.9999/12}, # 4-5 years
+                    ### 5 to 150 years
+                    "golden_image/mni_templates/nihpd_asym_04.5-08.5_t1w.nii": {"min_age":5,  "max_age":7.999},
+                    "golden_image/mni_templates/nihpd_asym_07.5-13.5_t1w.nii": {"min_age":8,  "max_age":13.99999},
+                    "golden_image/mni_templates/nihpd_asym_13.0-18.5_t1w.nii": {"min_age":14, "max_age":150}}
+    
+
     for golden_file_path, age_values in age_ranges.items():
         if age_values['min_age'] <= int(age) and int(age) <= age_values['max_age']: 
             return golden_file_path
@@ -88,9 +112,9 @@ def main(args):
     shutil.rmtree(args.output, ignore_errors=True)
     os.makedirs(args.output, exist_ok=True)
     # Process Meta
-    # meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    # print('🔎 Checking meta.csv')
-    # check_meta_columns(meta=meta)    
+    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+    print('🔎 Checking meta.csv')
+    check_meta_columns(meta=meta)    
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
     for filename in filenames:
         if filename not in meta['filename'].values:
@@ -111,11 +135,11 @@ def main(args):
         nib.save(file, output_file_path)
         
         # Register to the template
-        # if args.register:
-        #     print(f"\tRegistering to the template...")
-        #     age = meta[meta['filename'] == output_file_name]['age'].values[0]
-        #     template_path = select_template_based_on_age(age)
-        #     register_to_template(output_file_path, output_file_path, template_path)
+        if args.register:
+            print(f"\tRegistering to the template...")
+            age = meta[meta['filename'] == output_file_name]['age'].values[0]
+            template_path = select_template_based_on_age(age)
+            register_to_template(output_file_path, output_file_path, template_path)
         
         print(f"\tSaved to {output_file_path}")
         print()

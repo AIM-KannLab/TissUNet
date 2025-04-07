@@ -30,45 +30,62 @@ def extract_img_info_json(img: nib.Nifti1Image):
     return info
 
 def main(args):
+    label_map = {
+        0: "background",
+        1: "brain",
+        2: "temporalis",
+        3: "other_muscles",
+        4: "skull",
+        5: "subcutaneous_fat"
+    }
+
     nii_files = [f for f in os.listdir(args.preds_input) if f.endswith('.nii.gz')]
     total_samples = len(nii_files)
     print(f"🔍 Found {total_samples} NIfTI files in directory '{args.preds_input}'.")
 
-    metrics = {} # We use dict here and after convert it to DataFrame and then to CSV for sainity check
+    metrics = {}
     for sample_name in tqdm(sorted(nii_files), desc="🖼️ Processing NIfTI files"):
         nii_path = os.path.join(args.preds_input, sample_name)
         img = nib.load(nii_path)
         img_data = img.get_fdata().astype(np.uint8)
         if not np.all(np.equal(np.mod(img_data, 1), 0)): 
-            print("Warning: Non-integer values found in NIfTI file")
+            print(f"⚠️ Warning: Non-integer values found in {sample_name}")
         labels = np.unique(img_data)
         
         volumes = {}
         for label in labels:
+            if int(label) == 0:
+                continue  # Skip background
             mask = (img_data == label).astype(np.uint8)
             volume = int(np.sum(mask))
             volumes[str(int(label))] = volume
-        
+            
         metrics[sample_name] = {
             "path": nii_path,
             "sample_name": sample_name.replace('.nii.gz', ''),
             "volumes": volumes,
-            "img_info": extract_img_info_json(img),
         }
     
     records = []
     for key, value in metrics.items():
         flat_record = {'file': key}
         flat_record.update({k: v for k, v in value.items() if k != 'volumes' and k != 'img_info'})
+
         for vol_key, vol_value in value.get('volumes', {}).items():
-            flat_record[f'volumes_{vol_key}'] = vol_value
+            label_int = int(vol_key)
+            if label_int == 0:
+                continue  # Also skip background here if somehow included
+            tissue_name = label_map.get(label_int, f"label_{label_int}")
+            flat_record[f'vol_{tissue_name}'] = vol_value
+
         for info_key, info_value in value.get('img_info', {}).items():
             flat_record[f'img_info_{info_key}'] = info_value
+
         records.append(flat_record)
 
     df = pd.DataFrame(records)
     df.to_csv(args.metrics_output, index=False)
-    
+
     print(f"✅ Processing complete! Processed {total_samples} samples in total.")
     print(f"📁 Results saved to '{args.metrics_output}'.")
     
