@@ -25,16 +25,11 @@ def parse_args():
     parser.add_argument('--input_meta',  '-mi', type=str, required=True, help='Path to metadata CSV file')
     parser.add_argument('--meta_output', '-mo', type=str, required=True, help='Output path for meta.csv')
     
-    parser.add_argument('--model_weight_path_selection', type=str, default='model_weights/densenet_itmt2.hdf5',
-                        help='Path to the model weights for selection. Default: model_weights/densenet_itmt2.hdf5')
-    parser.add_argument('--cuda_visible_devices', type=str, default="0",
-                        help='CUDA device ID to use. Default: 0')
-    parser.add_argument('--dataset', '-d', type=str, required=False, 
-                         help='Dataset name to use in output filename (metadata_{dataset}.csv)')                          
-    parser.add_argument('--temp_path', '-tp', type=str, default="./temp",
-                        help='Path for temporary files. Default: ./temp')
-    parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 2),
-                        help='Number of worker processes to use for multiprocessing. Default: all CPU cores')                         
+    parser.add_argument('--model_weight_path_selection', type=str, default='model_weights/densenet_itmt2.hdf5', help='Path to the model weights for selection. Default: model_weights/densenet_itmt2.hdf5')
+    parser.add_argument('--cuda_visible_devices', type=str, default="0", help='CUDA device ID to use. Default: 0')
+    parser.add_argument('--dataset', '-d', type=str, help='Dataset name to use in output filename (metadata_{dataset}.csv)')                          
+    parser.add_argument('--temp_path', '-tp', type=str, default="./temp", help='Path for temporary files. Default: ./temp')
+    parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 2), help='Number of worker processes to use for multiprocessing. Default: all CPU cores')                         
     args = parser.parse_args()
     if not os.path.exists(args.input):
         raise ValueError(f'Input path "{args.input}" does not exist')
@@ -155,7 +150,7 @@ if __name__ == '__main__':
         print("🔎 Detected NYU dataset - using special filename matching for leading zeros")    
     
     # Add a normalized basename column to metadata for matching
-    meta['basename'] = meta['Filename'].astype(str).apply(lambda x: os.path.splitext(os.path.splitext(x)[0])[0] if x.endswith('.nii.gz') 
+    meta['basename'] = meta['filename'].astype(str).apply(lambda x: os.path.splitext(os.path.splitext(x)[0])[0] if x.endswith('.nii.gz') 
                                              else (os.path.splitext(x)[0] if x.endswith('.nii') else x))
     
     # Prepare arguments for multiprocessing
@@ -184,8 +179,8 @@ if __name__ == '__main__':
             skipped_files.append(filename)
             continue
             
-        age = matching_rows['AGE_M'].values[0]
-        sex = matching_rows['SEX'].values[0]
+        age = matching_rows['age'].values[0]
+        sex = matching_rows['sex'].values[0]
         filepath = os.path.join(args.input, filename)
         
         # Pack all arguments into a tuple for the process_file function
@@ -261,15 +256,15 @@ if __name__ == '__main__':
     meta['ID'] = meta['basename']
     
     # Rename columns
-    meta = meta.rename(columns={'AGE_M': 'Age', 'SEX': 'Sex', 'dataset': 'Dataset'})
+    meta = meta.rename(columns={'age': 'Age', 'sex': 'Sex', 'dataset': 'Dataset'})
     
     # Remove unwanted columns
-    meta = meta.drop(columns=['SCAN_PATH', 'Filename', 'basename'], errors='ignore')
+    meta = meta.drop(columns=['SCAN_PATH', 'filename', 'basename'], errors='ignore')
     # Convert to integer
     meta['Slice label'] = meta['Slice label'].astype(int)
 
     # Extract dataset name without suffix ("_reg")
     dataset_name = args.dataset.split('_')[0] if args.dataset else "unknown"
         
-    meta.to_csv(os.path.join(args.meta_output, f'metadata_{dataset_name}.csv'), index=False)
+    meta.to_csv(os.path.join(args.meta_output), index=False)
     print(f'✅ metadata_{dataset_name}.csv saved with slice labels')   

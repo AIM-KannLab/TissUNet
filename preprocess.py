@@ -112,9 +112,9 @@ def main(args):
     shutil.rmtree(args.output, ignore_errors=True)
     os.makedirs(args.output, exist_ok=True)
     # Process Meta
-    # meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    # print('🔎 Checking meta.csv')
-    # check_meta_columns(meta=meta)    
+    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
+    print('🔎 Checking meta.csv')
+    check_meta_columns(meta=meta)    
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
     for filename in filenames:
         if filename not in meta['filename'].values:
@@ -135,11 +135,11 @@ def main(args):
         nib.save(file, output_file_path)
         
         # Register to the template
-        # if args.register:
-        #     print(f"\tRegistering to the template...")
-        #     age = meta[meta['filename'] == output_file_name]['age'].values[0]
-        #     template_path = select_template_based_on_age(age)
-        #     register_to_template(output_file_path, output_file_path, template_path)
+        if args.register:
+            print(f"\tRegistering to the template...")
+            age = meta[meta['filename'] == output_file_name]['age'].values[0]
+            template_path = select_template_based_on_age(age)
+            register_to_template(output_file_path, output_file_path, template_path)
         
         print(f"\tSaved to {output_file_path}")
         print()

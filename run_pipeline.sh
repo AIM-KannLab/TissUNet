@@ -21,43 +21,50 @@ for arg in "$@"; do
     elif [ "$arg" == "--cleanup" ]; then
         CLEANUP=true
     fi
-done
+done 
 
 echo "📂 Input MR folder: $INPUT_DIR"
 echo "📁 Output base folder: $OUTPUT_DIR"
-echo "🖥️  Device: $DEVICE"
+echo "🖥️ Device: $DEVICE"
 echo "🚫 Registration: $NO_REGISTER"
 echo "🧹 Cleanup: $CLEANUP"
 
 # ---------------- Create Directory Structure ----------------
-echo "📁 Creating output folders..."
-mkdir -p "$OUTPUT_DIR"/{mr_pre,mr_post,mr_post_def,preds,preds_post,preds_post_def,model_weights,nnUNet_results,nnUNet_raw,nnUNet_preprocessed}
+# echo "📁 Creating output folders..."
+# mkdir -p "$OUTPUT_DIR"/{mr_pre,mr_post,mr_post_def,preds,preds_post,preds_post_def,model_weights,nnUNet_results,nnUNet_raw,nnUNet_preprocessed}
 
 # Copy meta.csv if present
-if [ -f "$INPUT_DIR/meta.csv" ]; then
-    cp "$INPUT_DIR/meta.csv" "$OUTPUT_DIR/mr_pre/meta.csv"
-    echo "📋 meta.csv copied to $OUTPUT_DIR/mr_pre/"
-else
-    echo "⚠️ meta.csv not found in $INPUT_DIR. Skipping slice prediction."
-fi
+# if [ -f "$INPUT_DIR/meta.csv" ]; then
+#     cp "$INPUT_DIR/meta.csv" "$OUTPUT_DIR/mr_pre/meta.csv"
+#     echo "📋 meta.csv copied to $OUTPUT_DIR/mr_pre/"
+# else
+#     echo "⚠️ meta.csv not found in $INPUT_DIR. Skipping slice prediction."
+# fi
 
 # ---------------- Download Weights ----------------
-echo "⬇️ Downloading model weights..."
-python download_weights.py
+# echo "⬇️ Downloading model weights..."
+# python download_weights.py
 
 # ---------------- Preprocess ----------------
+echo "====================================="
+echo "=============STEP 1=================="
+echo "====================================="
 echo "🧼 Preprocessing input data..."
 PREPROCESS_CMD="python preprocess.py -i $INPUT_DIR -o $OUTPUT_DIR/mr_pre"
 if [ "$NO_REGISTER" = true ]; then
     PREPROCESS_CMD+=" --no-register"
 fi
+# Print the command for debugging
 eval $PREPROCESS_CMD
 
 # ---------------- Predict ----------------
+echo "====================================="
+echo "=============STEP 2.1================"
+echo "====================================="
 echo "🔮 Running predictions..."
-export nnUNet_raw="$(pwd)/$OUTPUT_DIR/nnUNet_raw"
-export nnUNet_preprocessed="$(pwd)/$OUTPUT_DIR/nnUNet_preprocessed"
-export nnUNet_results="$(pwd)/$OUTPUT_DIR/nnUNet_results"
+export nnUNet_raw="$(pwd)/nnUNet_raw"
+export nnUNet_preprocessed="$(pwd)/nnUNet_preprocessed"
+export nnUNet_results="$(pwd)/nnUNet_results"
 
 PREDICT_CMD="python predict.py -i $OUTPUT_DIR/mr_pre -o $OUTPUT_DIR/preds -d $DEVICE"
 if [ "$CLEANUP" = true ]; then
@@ -66,6 +73,9 @@ fi
 eval $PREDICT_CMD
 
 # ---------------- Predict Slices ----------------
+echo "====================================="
+echo "=============STEP 2.2================"
+echo "====================================="
 if [ -f "$OUTPUT_DIR/mr_pre/meta.csv" ]; then
     echo "🧠 Running slice prediction..."
     python predict_slices.py -i "$OUTPUT_DIR/mr_pre" \
@@ -74,6 +84,9 @@ if [ -f "$OUTPUT_DIR/mr_pre/meta.csv" ]; then
 fi
 
 # ---------------- Postprocess ----------------
+echo "====================================="
+echo "=============STEP 3=================="
+echo "====================================="
 echo "🧽 Postprocessing predictions..."
 python postprocess.py -mi "$OUTPUT_DIR/mr_pre" \
                       -pi "$OUTPUT_DIR/preds" \
@@ -87,6 +100,9 @@ python postprocess.py -mi "$OUTPUT_DIR/mr_pre" \
                       --deface
 
 # ---------------- Compute Metrics ----------------
+echo "====================================="
+echo "=============STEP 4=================="
+echo "====================================="
 echo "📊 Computing metrics..."
 python compute_metrics.py -pi "$OUTPUT_DIR/preds_post" \
                           -mo "$OUTPUT_DIR/preds_post/metrics.csv"
