@@ -13,11 +13,18 @@ import SimpleITK as sitk
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
-    parser.add_argument('--output', '-o', type=str, required=False, help='Output directory (optional)')
+    parser.add_argument('--output', '-o', type=str, required=True, help='Output directory (optional)')
+    parser.add_argument('--meta', '-m', type=str, required=False, help='Meta file (optional)')
     parser.add_argument('--no-register', action='store_false', dest='register', help='Disable MRI registration')
     args = parser.parse_args()
+    if not os.path.exists(args.input):
+        raise FileNotFoundError(f"The input directory {args.input} does not exist.")
     if not args.output:
         args.output = args.input
+    if not args.meta:
+        args.meta = os.path.join(args.input, 'meta.csv')
+    if not os.path.exists(args.meta):
+        raise FileNotFoundError(f"The meta file {args.meta} does not exist.")
     return args
 
 def read_nii_with_fix(file_path: str):
@@ -112,8 +119,9 @@ def main(args):
     shutil.rmtree(args.output, ignore_errors=True)
     os.makedirs(args.output, exist_ok=True)
     # Process Meta
-    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    print('🔎 Checking meta.csv')
+    meta = pd.read_csv(args.meta)
+    meta_filename = os.path.basename(args.meta)
+    print(f'🔎 Checking {meta_filename}')
     check_meta_columns(meta=meta)    
     filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
     for filename in filenames:
@@ -122,7 +130,7 @@ def main(args):
             sys.exit(1)
     meta['filename'] = meta['filename'].apply(lambda x: get_nnunet_filename(x))
     meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
-    print('✅ meta.csv checked and saved')
+    print(f'✅ {meta_filename} checked and saved')
     # Process NII
     print('🔄 Preprocessing filenames\n')
     for i, file_name in enumerate(sorted(filenames)):

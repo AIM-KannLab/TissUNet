@@ -4,7 +4,7 @@ set -e  # Exit on error
 
 # ---------------- Parse Arguments ----------------
 if [ "$#" -lt 3 ]; then
-    echo "❌ Usage: bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--no-register] [--no-predict-slices] [--cleanup]"
+    echo "❌ Usage: bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--meta <meta_path>] [--no-register] [--no-predict-slices] [--cleanup]"
     exit 1
 fi
 
@@ -14,24 +14,42 @@ DEVICE=$3
 NO_REGISTER=false
 NO_PREDICT_SLICES=false
 CLEANUP=false
+META_PATH=""
 
 # Optional flags
-for arg in "$@"; do
-    if [ "$arg" == "--no-register" ]; then
-        NO_REGISTER=true
-    elif [ "$arg" == "--no-predict-slices" ]; then
-        NO_PREDICT_SLICES=true
-    elif [ "$arg" == "--cleanup" ]; then
-        CLEANUP=true
-    fi
+shift 3
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --no-register)
+            NO_REGISTER=true
+            shift
+            ;;
+        --no-predict-slices)
+            NO_PREDICT_SLICES=true
+            shift
+            ;;
+        --cleanup)
+            CLEANUP=true
+            shift
+            ;;
+        --meta)
+            META_PATH="$2"
+            shift 2
+            ;;
+        *)
+            echo "⚠️ Unknown option: $1"
+            shift
+            ;;
+    esac
 done 
 
 echo "📂 Input MR folder: $INPUT_DIR"
 echo "📁 Output base folder: $OUTPUT_DIR"
 echo "🖥️ Device: $DEVICE"
-if [ "$NO_REGISTER" = true ]; then echo "® Registration: false"; else echo "® Registration: true"; fi
+if [ "$NO_REGISTER" = true ]; then echo "👨‍🦲 Registration: false"; else echo "👨‍🦲 Registration: true"; fi
 if [ "$NO_PREDICT_SLICES" = true ]; then echo "🍕 Slice prediction: false"; else echo "🍕 Slice prediction: true"; fi
 echo "🧹 Cleanup: $CLEANUP"
+if [ -n "$META_PATH" ]; then echo "🧾 Using external meta path: $META_PATH"; fi
 
 # ---------------- Preprocess ----------------
 echo "====================================="
@@ -41,6 +59,9 @@ echo "🧼 Preprocessing input data..."
 PREPROCESS_CMD="python preprocess.py -i $INPUT_DIR -o $OUTPUT_DIR/mr_pre"
 if [ "$NO_REGISTER" = true ]; then
     PREPROCESS_CMD+=" --no-register"
+fi
+if [ -n "$META_PATH" ]; then
+    PREPROCESS_CMD+=" --meta $META_PATH"
 fi
 # Print the command for debugging
 eval $PREPROCESS_CMD
