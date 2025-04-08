@@ -4,7 +4,7 @@ venv
 .venv
 .DS_Store
 
-mr_*
+mr*
 ct*
 data*
 preds*
