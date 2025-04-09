@@ -199,6 +199,4 @@ bash process_thickness_estimation.sh \
 ```
 
 # Known Issues
-- For some slices IMEA throws a warning during 2D (micro) metrics computation: `Slope is zero slope --> fractal dimension will be set to zero`.
-- For some slices the volumetrics computed by IMEA and by hand differ by a few pixels.
 - Not tested for gestational 36-44 weeks (neonatal) MRIs. The pipeline may not work for neonatal MRIs due to differences in brain structure and segmentation.
