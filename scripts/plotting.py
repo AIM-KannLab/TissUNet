@@ -11,7 +11,7 @@ def plot_results(
     center_y,
     contour,
     z,
-    filename,
+    file_name,
     text_offset=-7,
     save_path=None,
 ):
@@ -22,7 +22,7 @@ def plot_results(
     plt.figure(figsize=(10, 10))
     plt.imshow(mask_slice, cmap="hot", interpolation="nearest")
     plt.title(
-        f"Thickness at Checkpoints and Quadrant Aggregates (Slice {z}, File: {filename})"
+        f"Thickness at Checkpoints and Quadrant Aggregates (Slice {z}, File: {file_name})"
     )
 
     # Plot the checkpoints with their thickness values, tangents, and perpendiculars

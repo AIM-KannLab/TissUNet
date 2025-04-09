@@ -13,11 +13,18 @@ import SimpleITK as sitk
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
-    parser.add_argument('--output', '-o', type=str, required=False, help='Output directory (optional)')
+    parser.add_argument('--output', '-o', type=str, required=True, help='Output directory')
+    parser.add_argument('--meta', '-m', type=str, required=False, help='Meta file (optional)')
     parser.add_argument('--no-register', action='store_false', dest='register', help='Disable MRI registration')
     args = parser.parse_args()
+    if not os.path.exists(args.input):
+        raise FileNotFoundError(f"The input directory {args.input} does not exist.")
     if not args.output:
         args.output = args.input
+    if not args.meta:
+        args.meta = os.path.join(args.input, 'meta.csv')
+    if not os.path.exists(args.meta):
+        raise FileNotFoundError(f"The meta file {args.meta} does not exist.")
     return args
 
 def read_nii_with_fix(file_path: str):
@@ -47,10 +54,10 @@ def read_nii_with_fix(file_path: str):
     return file
             
 def check_meta_columns(meta):
-    if not all([col in meta.columns for col in ['filename', 'age', 'sex']]):
-        raise ValueError('meta.csv must contain filename, age and sex columns')
+    if not all([col in meta.columns for col in ['file_name', 'age', 'sex']]):
+        raise ValueError('meta.csv must contain file_name, age and sex columns')
     
-def get_nnunet_filename(file_name):
+def get_nnunet_file_name(file_name):
     output_file_name = None
     if file_name.endswith('_0000.nii.gz'):
         output_file_name = file_name
@@ -107,37 +114,49 @@ def register_to_template(input_image_path, output_image_path, fixed_image_path):
         parameter_object=parameter_object,
         log_to_console=False)
     itk.imwrite(result_image, output_image_path)
+    
+def get_sample_name(file_name):
+    # Copy to sample name
+    if file_name.endswith('_0000.nii.gz'):
+        sample_name = file_name.replace('_0000.nii.gz', '')
+    elif file_name.endswith('.nii.gz'):
+        sample_name = file_name.replace('.nii.gz', '')
+    elif file_name.endswith('.nii'):
+        sample_name = file_name.replace('.nii', '')
+    return sample_name
 
 def main(args):
     shutil.rmtree(args.output, ignore_errors=True)
     os.makedirs(args.output, exist_ok=True)
     # Process Meta
-    meta = pd.read_csv(os.path.join(args.input, 'meta.csv'))
-    print('🔎 Checking meta.csv')
+    meta = pd.read_csv(args.meta)
+    meta_file_name = os.path.basename(args.meta)
+    print(f'🔎 Checking {meta_file_name}')
     check_meta_columns(meta=meta)    
-    filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
-    for filename in filenames:
-        if filename not in meta['filename'].values:
-            print(f'The filename {filename} is not found in meta.csv. Please, make sure that all filenames from input directory are present in meta.csv')
+    file_names = [fn for fn in os.listdir(args.input) if fn.endswith('.nii') or fn.endswith('.nii.gz')]
+    for file_name in file_names:
+        if file_name not in meta['file_name'].values:
+            print(f'The file_name {file_name} is not found in meta.csv. Please, make sure that all file_names from input directory are present in meta.csv')
             sys.exit(1)
-    meta['filename'] = meta['filename'].apply(lambda x: get_nnunet_filename(x))
+    meta['file_name'] = meta['file_name'].apply(lambda x: get_nnunet_file_name(x))
+    meta['sample_name'] = meta['file_name'].apply(lambda x: get_sample_name(x))
     meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
-    print('✅ meta.csv checked and saved')
+    print(f'✅ {meta_file_name} checked and saved')
     # Process NII
-    print('🔄 Preprocessing filenames\n')
-    for i, file_name in enumerate(sorted(filenames)):
+    print('🔄 Preprocessing file_names\n')
+    for i, file_name in enumerate(sorted(file_names)):
         file_path = os.path.join(args.input, file_name)
-        print(f"[{i+1}/{len(filenames)}] Processing {file_path}...")
+        print(f"[{i+1}/{len(file_names)}] Processing {file_path}...")
         file = read_nii_with_fix(file_path)
 
-        output_file_name = get_nnunet_filename(file_name)
+        output_file_name = get_nnunet_file_name(file_name)
         output_file_path = os.path.join(args.output, output_file_name)
         nib.save(file, output_file_path)
         
         # Register to the template
         if args.register:
             print(f"\tRegistering to the template...")
-            age = meta[meta['filename'] == output_file_name]['age'].values[0]
+            age = meta[meta['file_name'] == output_file_name]['age'].values[0]
             template_path = select_template_based_on_age(age)
             register_to_template(output_file_path, output_file_path, template_path)
         

@@ -17,10 +17,12 @@ python download_weights.py
 You can also find weights for TissUNet by [this link](https://www.dropbox.com/scl/fo/nu00kaibm1dy74lt34ecx/AGX4pLbs5RO1P9dHQgjz13I?rlkey=8wz0y0wfij16q1onwipw19qhx&st=hxpz1b6j&dl=0)
 
 ## Project Structure
-Below is the sample of initial project structure.
+Below is the sample of project structure.
 ```
 TissUNet \ <cloned repo>
     venv \
+    assets \
+    golden_image \
     mr \
         meta.csv
         sample_name_1.nii.gz (or .nii)
@@ -34,23 +36,42 @@ TissUNet \ <cloned repo>
     .gitignore
     README.md
     preprocess.py
+    predict.py
+    predict_slices.py
     postprocess.py
     compute_metrics.py
     requirements.in
     requirements.txt
+    run_pipeline.sh
 ```
 
-The `meta.csv` should contain columns `filename`, `age`(in years, can be float number) and `sex` and entry for each MR file. Here is an example of `meta.csv`
+The `meta.csv` should contain columns `file_name`, `age`(in years, can be float number) and `sex` and entry for each MR file:
 ```
-filename,age,sex
+file_name,age,sex
+sample_name_1.nii.gz,sample_age_years_1,sample_sex_1
+sample_name_2.nii.gz,sample_age_years_2,sample_sex_2
+...
+sample_name_n.nii.gz,sample_age_years_3,sample_sex_3
+```
+
+ Here is an example of `meta.csv`
+```
+file_name,age,sex
 BCP-418009-53mo-v1_8_T1w.nii,6,F
 BCP-431010-64mo-v1_13_T1w.nii,9,M
 IXI621-Guys-1100-T1.nii,12,F
 ```
 
-## Pipeline Visualization
-![pipeline](pipeline.png "Pipeline")
+## Visualizations
+### Operations
+![pipeline](assets/pipeline.png "Pipeline")
 
+### Dir/Meta
+![dir_pipeline](assets/dir_pipeline.png "Dir Pipeline")
+where:
+- BLACK. color denotes `DIRECTORY`
+- <span style="color:green">GREEN</span> color denotes `META`
+- <span style="color:blue">BLUE</span> color denotes `COLUMNS IN META`
 # Option 1: Using bash script to run the pipeline
 For convenience, you can run the entire pipeline using the provided bash script. This will execute all steps in order, from preprocessing to computing metrics.
 
@@ -178,6 +199,4 @@ bash process_thickness_estimation.sh \
 ```
 
 # Known Issues
-- For some slices IMEA throws a warning during 2D (micro) metrics computation: `Slope is zero slope --> fractal dimension will be set to zero`.
-- For some slices the volumetrics computed by IMEA and by hand differ by a few pixels.
 - Not tested for gestational 36-44 weeks (neonatal) MRIs. The pipeline may not work for neonatal MRIs due to differences in brain structure and segmentation.

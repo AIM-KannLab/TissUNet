@@ -67,8 +67,8 @@ def main(args):
 
     print("\n🔍 Scanning input directories ...")
     paths_pairs = []
-    pred_filenames = [fn for fn in os.listdir(args.preds_input) if fn.endswith('.nii.gz')]
-    for file in sorted(pred_filenames):
+    pred_file_names = [fn for fn in os.listdir(args.preds_input) if fn.endswith('.nii.gz')]
+    for file in sorted(pred_file_names):
         if not file.endswith('.nii.gz'):
             print(f"⏭️ Skipping {file} (not a nii.gz file)")
             continue
@@ -117,10 +117,13 @@ def main(args):
         nib.save(pred_out_file, pred_out_path)
 
     # Copy mr_input/meta.csv to mr_output/meta.csv
-    meta_input_path = os.path.join(args.mr_input, 'meta.csv')
-    meta_output_path = os.path.join(args.mr_output, 'meta.csv')
-    print(f"\n📑 Copying metadata: {meta_input_path} -> {meta_output_path} ...")
-    os.system(f'cp {meta_input_path} {meta_output_path}')
+    meta_input_path = os.path.join(args.preds_input, 'meta.csv')
+    meta_output_path_1 = os.path.join(args.mr_output, 'meta.csv')
+    meta_output_path_2 = os.path.join(args.preds_output, 'meta.csv')
+    print(f"\n📑 Copying metadata: {meta_input_path} -> {meta_output_path_1} ...")
+    os.system(f'cp {meta_input_path} {meta_output_path_1}')
+    print(f"📑 Copying metadata: {meta_input_path} -> {meta_output_path_2} ...")
+    os.system(f'cp {meta_input_path} {meta_output_path_2}')
 
     print("\n🎉 Postprocessing completed successfully!")
 

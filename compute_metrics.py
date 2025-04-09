@@ -15,9 +15,6 @@ def parse_args():
     if not os.path.exists(args.preds_input) or not os.path.isdir(args.preds_input):
         print(f"Directory not found: {args.preds_input}")
         sys.exit(1)
-    if os.path.exists(args.metrics_output):
-        print(f"File already exists: {args.metrics_output}")
-        sys.exit(1)
     return args
 
 def extract_img_info_json(img: nib.Nifti1Image):
@@ -44,12 +41,12 @@ def main(args):
     print(f"🔍 Found {total_samples} NIfTI files in directory '{args.preds_input}'.")
 
     metrics = {}
-    for sample_name in tqdm(sorted(nii_files), desc="🖼️ Processing NIfTI files"):
-        nii_path = os.path.join(args.preds_input, sample_name)
+    for file_name in tqdm(sorted(nii_files), desc="🖼️ Processing NIfTI files"):
+        nii_path = os.path.join(args.preds_input, file_name)
         img = nib.load(nii_path)
         img_data = img.get_fdata().astype(np.uint8)
         if not np.all(np.equal(np.mod(img_data, 1), 0)): 
-            print(f"⚠️ Warning: Non-integer values found in {sample_name}")
+            print(f"⚠️ Warning: Non-integer values found in {file_name}")
         labels = np.unique(img_data)
         
         volumes = {}
@@ -59,16 +56,26 @@ def main(args):
             mask = (img_data == label).astype(np.uint8)
             volume = int(np.sum(mask))
             volumes[str(int(label))] = volume
-            
+        
+        sample_name = file_name.replace('.nii.gz', '')
         metrics[sample_name] = {
-            "path": nii_path,
-            "sample_name": sample_name.replace('.nii.gz', ''),
+            # "path": nii_path,
+            # "sample_name": sample_name,
             "volumes": volumes,
         }
     
+    df_meta = pd.read_csv(os.path.join(args.preds_input, 'meta.csv'))
     records = []
     for key, value in metrics.items():
-        flat_record = {'file': key}
+        meta_data = df_meta[df_meta['sample_name'] == key]
+        flat_record = {}
+        if not meta_data.empty:
+            flat_record['file_name'] = meta_data.iloc[0]['file_name']
+            flat_record['sample_name'] = meta_data.iloc[0]['sample_name']
+            flat_record['age'] = meta_data.iloc[0]['age']
+            flat_record['sex'] = meta_data.iloc[0]['sex']
+            flat_record['slice_idx'] = meta_data.iloc[0]['slice_idx']
+        
         flat_record.update({k: v for k, v in value.items() if k != 'volumes' and k != 'img_info'})
 
         for vol_key, vol_value in value.get('volumes', {}).items():
@@ -83,8 +90,8 @@ def main(args):
 
         records.append(flat_record)
 
-    df = pd.DataFrame(records)
-    df.to_csv(args.metrics_output, index=False)
+    df_metrics = pd.DataFrame(records)
+    df_metrics.to_csv(args.metrics_output, index=False)
 
     print(f"✅ Processing complete! Processed {total_samples} samples in total.")
     print(f"📁 Results saved to '{args.metrics_output}'.")

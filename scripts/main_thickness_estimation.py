@@ -20,7 +20,7 @@ import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 import argparse
 
-skipped_images_df = pd.DataFrame(columns=["filename", "reason"])
+skipped_images_df = pd.DataFrame(columns=["file_name", "reason"])
 
 
 def process_mask_file(
@@ -46,19 +46,19 @@ def process_mask_file(
         None
 
     Note:
-        Skips processing if no matching slice label is found and adds the filename
+        Skips processing if no matching slice label is found and adds the file_name
         to skipped_images_df.
     """
-    filename = os.path.basename(mask_path).split(".")[0]
+    file_name = os.path.basename(mask_path).split(".")[0]
     mask_binary = load_and_binarize_mask(mask_path)
     z_index = get_slice_for_file(mask_path, lookup_slice_table)
 
     if z_index is None:
-        print(f"No matching slice label found for file: {filename}")
-        return [], [{"filename": filename, "reason": "no slice label"}]
+        print(f"No matching slice label found for file: {file_name}")
+        return [], [{"file_name": file_name, "reason": "no slice label"}]
 
-    filename_plot_dir = os.path.join(plot_output_dir, filename)
-    os.makedirs(filename_plot_dir, exist_ok=True)
+    file_name_plot_dir = os.path.join(plot_output_dir, file_name)
+    os.makedirs(file_name_plot_dir, exist_ok=True)
     os.makedirs(csv_output_dir, exist_ok=True)
 
     z_slice_range = get_slice_range(z_index, slice_range=15)
@@ -70,24 +70,24 @@ def process_mask_file(
         success, reason = process_slice(
             mask_binary,
             z,
-            filename,
-            filename_plot_dir,
+            file_name,
+            file_name_plot_dir,
             csv_results,
             dataset_name,
         )
         if not success:
             # Record the skipped image with the reason
-            skipped_images.append({"filename": filename, "reason": reason})
+            skipped_images.append({"file_name": file_name, "reason": reason})
             return csv_results, skipped_images  # Skip for serious issues
 
     # Save results
-    save_file_results(csv_results, csv_output_dir, filename)
+    save_file_results(csv_results, csv_output_dir, file_name)
     global_csv_results.extend(csv_results)
     return csv_results, skipped_images
 
 
 def process_slice(
-    mask_binary, z, filename, filename_plot_dir, csv_results, dataset_name
+    mask_binary, z, file_name, file_name_plot_dir, csv_results, dataset_name
 ):
     """
     Process a single slice for thickness calculations and visualization.
@@ -95,8 +95,8 @@ def process_slice(
     Parameters:
         mask_binary (np.ndarray): 3D binary mask array
         z (int): Z-index of the slice to process
-        filename (str): Name of the file being processed
-        filename_plot_dir (str): Directory to save plots for this file
+        file_name (str): Name of the file being processed
+        file_name_plot_dir (str): Directory to save plots for this file
         csv_results (list): List to store results for this file
         dataset_name (str): Name of the dataset being processed
 
@@ -117,7 +117,7 @@ def process_slice(
     mask_slice = fill_holes_in_contours(mask_slice)
     result = find_longest_contour(mask_slice)
     if result is None:
-        print(f"No contours found in slice {z} of image {filename}. Skipping slice.")
+        print(f"No contours found in slice {z} of image {file_name}. Skipping slice.")
         return False, "no contours"  # Signal to skip the slice
 
     # Unpack results
@@ -134,8 +134,8 @@ def process_slice(
 
     # Validate quadrant_data before calculating statistics
     if any(len(values) == 0 for values in quadrant_data.values()):
-        print(f"Empty quadrant data for slice {z} in image {filename}. Skipping image.")
-        # shutil.rmtree(filename_plot_dir)
+        print(f"Empty quadrant data for slice {z} in image {file_name}. Skipping image.")
+        # shutil.rmtree(file_name_plot_dir)
         return False, "broken"  # Signal to skip the image
 
     quadrant_stats = {
@@ -146,7 +146,7 @@ def process_slice(
         [
             {
                 "dataset": dataset_name,
-                "filename": filename,
+                "file_name": file_name,
                 "z_index": z,
                 "thickness": thickness,
                 "quadrant": quad,
@@ -156,7 +156,7 @@ def process_slice(
         ]
     )
 
-    plot_save_path = os.path.join(filename_plot_dir, f"{filename}_slice_{z}.png")
+    plot_save_path = os.path.join(file_name_plot_dir, f"{file_name}_slice_{z}.png")
     plot_results(
         mask_slice,
         checkpoints,
@@ -166,7 +166,7 @@ def process_slice(
         center_y,
         contour,
         z,
-        filename,
+        file_name,
         save_path=plot_save_path,
     )
     return True, None
@@ -309,7 +309,7 @@ def main():
         print(f"  {key}: {path}")
 
     skipped_images_path = os.path.join(paths["csv_output_dir"], "skipped_images.csv")
-    skipped_images_df = pd.DataFrame(columns=["filename", "reason"])
+    skipped_images_df = pd.DataFrame(columns=["file_name", "reason"])
     lookup_table = pd.read_csv(paths["lookup_slice_table"])
     global_csv_results = []
 
@@ -359,9 +359,9 @@ def main():
         result, skipped, error = future.result()
         if result:
             global_csv_results.extend(result)
-            # Extract the filename from the first result entry if available
+            # Extract the file_name from the first result entry if available
             if isinstance(result, list) and result:
-                processed_files.add(result[0].get("filename", "unknown"))
+                processed_files.add(result[0].get("file_name", "unknown"))
 
         if skipped:
             # Add any skipped images from this process to DataFrame
@@ -369,15 +369,15 @@ def main():
                 skipped_images_df = pd.concat(
                     [skipped_images_df, pd.DataFrame([item])], ignore_index=True
                 )
-                if "filename" in item:
-                    skipped_files.add(item["filename"])
+                if "file_name" in item:
+                    skipped_files.add(item["file_name"])
 
         if error:
             file, reason = error
             skipped_images_df = pd.concat(
                 [
                     skipped_images_df,
-                    pd.DataFrame([{"filename": file, "reason": reason}]),
+                    pd.DataFrame([{"file_name": file, "reason": reason}]),
                 ],
                 ignore_index=True,
             )

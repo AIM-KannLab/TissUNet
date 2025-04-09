@@ -27,7 +27,7 @@ def parse_args():
     
     parser.add_argument('--model_weight_path_selection', type=str, default='model_weights/densenet_itmt2.hdf5', help='Path to the model weights for selection. Default: model_weights/densenet_itmt2.hdf5')
     parser.add_argument('--cuda_visible_devices', type=str, default="0", help='CUDA device ID to use. Default: 0')
-    parser.add_argument('--dataset', '-d', type=str, help='Dataset name to use in output filename (metadata_{dataset}.csv)')                          
+    parser.add_argument('--dataset', '-d', type=str, help='Dataset name to use in output file_name (metadata_{dataset}.csv)')                          
     parser.add_argument('--temp_path', '-tp', type=str, default="./temp", help='Path for temporary files. Default: ./temp')
     parser.add_argument('--num_workers', '-n', type=int, default=max(1, os.cpu_count() - 2), help='Number of worker processes to use for multiprocessing. Default: all CPU cores')                         
     args = parser.parse_args()
@@ -110,13 +110,13 @@ def get_file_name(file_path):
 
 def process_file(args_tuple):
     """Wrapper function for predict_slice to work with multiprocessing"""
-    filename, age, sex, filepath, temp_path, model_weight_path_selection, file_idx, total_files = args_tuple
+    file_name, age, sex, filepath, temp_path, model_weight_path_selection, file_idx, total_files = args_tuple
     
     # Create a unique subfolder in temp_path for each process to avoid conflicts
     process_temp_path = os.path.join(temp_path, f"process_{os.getpid()}")
     os.makedirs(process_temp_path, exist_ok=True)
     
-    print(f"[{file_idx+1}/{total_files}] Processing {filename}...")
+    print(f"[{file_idx+1}/{total_files}] Processing {file_name}...")
     try:
         slice_label = predict_slice(
             age=age, 
@@ -125,18 +125,18 @@ def process_file(args_tuple):
             path_temp=process_temp_path,
             model_weight_path_selection=model_weight_path_selection, 
         )
-        return filename, slice_label, None
+        return file_name, slice_label, None
     except Exception as e:
-        error_message = f"⚠️ Error processing {filename}: {str(e)}"
-        return filename, None, error_message
+        error_message = f"⚠️ Error processing {file_name}: {str(e)}"
+        return file_name, None, error_message
 
 if __name__ == '__main__':
     args = parse_args()
     configure_devices(args.cuda_visible_devices)
     meta = pd.read_csv(args.input_meta)
 
-    filenames = [fn for fn in os.listdir(args.input) if fn.endswith('.nii.gz')]
-    print(f"📄 Found {len(filenames)} files")
+    file_names = [fn for fn in os.listdir(args.input) if fn.endswith('.nii.gz')]
+    print(f"📄 Found {len(file_names)} files")
     
     # Create temp directory
     temp_path = args.temp_path
@@ -147,19 +147,19 @@ if __name__ == '__main__':
     is_nyu_dataset = False
     if args.dataset and 'nyu' in args.dataset.lower():
         is_nyu_dataset = True
-        print("🔎 Detected NYU dataset - using special filename matching for leading zeros")    
+        print("🔎 Detected NYU dataset - using special file_name matching for leading zeros")    
     
     # Add a normalized basename column to metadata for matching
-    meta['basename'] = meta['filename'].astype(str).apply(lambda x: os.path.splitext(os.path.splitext(x)[0])[0] if x.endswith('.nii.gz') 
+    meta['basename'] = meta['file_name'].astype(str).apply(lambda x: os.path.splitext(os.path.splitext(x)[0])[0] if x.endswith('.nii.gz') 
                                              else (os.path.splitext(x)[0] if x.endswith('.nii') else x))
     
     # Prepare arguments for multiprocessing
     process_args = []
     skipped_files = []
     
-    for i, filename in enumerate(filenames):
+    for i, file_name in enumerate(file_names):
         # Extract basename without extensions for matching
-        basename = os.path.splitext(os.path.splitext(filename)[0])[0]  # Remove .nii.gz
+        basename = os.path.splitext(os.path.splitext(file_name)[0])[0]  # Remove .nii.gz
         basename_last_part = os.path.basename(basename)
         
         # Find matching row by basename
@@ -172,21 +172,21 @@ if __name__ == '__main__':
             matching_mask = metadata_no_zeros == basename_no_zeros
             if any(matching_mask):
                 matching_rows = meta[matching_mask]
-                print(f"✓ Found metadata match for {filename} using zero-stripping")
+                print(f"✓ Found metadata match for {file_name} using zero-stripping")
         
         if len(matching_rows) == 0:
-            print(f"⚠️ No metadata match found for {filename}, skipping")
-            skipped_files.append(filename)
+            print(f"⚠️ No metadata match found for {file_name}, skipping")
+            skipped_files.append(file_name)
             continue
             
         age = matching_rows['age'].values[0]
         sex = matching_rows['sex'].values[0]
-        filepath = os.path.join(args.input, filename)
+        filepath = os.path.join(args.input, file_name)
         
         # Pack all arguments into a tuple for the process_file function
         process_args.append((
-            filename, age, sex, filepath, temp_path, 
-            args.model_weight_path_selection, i, len(filenames)
+            file_name, age, sex, filepath, temp_path, 
+            args.model_weight_path_selection, i, len(file_names)
         ))
         
     if skipped_files:
@@ -204,20 +204,20 @@ if __name__ == '__main__':
         ))
     
     # Process results
-    # for filename, slice_label, error in results:
+    # for file_name, slice_label, error in results:
     #     if error:
     #         print(error)
     #     else:
     #         # Match by basename for updating slice labels
-    #         basename = os.path.splitext(os.path.splitext(filename)[0])[0]
-    #         meta.loc[meta['basename'] == basename, 'Slice label'] = slice_label
+    #         basename = os.path.splitext(os.path.splitext(file_name)[0])[0]
+    #         meta.loc[meta['basename'] == basename, 'slice_idx'] = slice_label
     # Process results
-    for filename, slice_label, error in results:
+    for file_name, slice_label, error in results:
         if error:
             print(error)
         else:
             # Match by basename for updating slice labels
-            basename = os.path.splitext(os.path.splitext(filename)[0])[0]  # Remove .nii.gz
+            basename = os.path.splitext(os.path.splitext(file_name)[0])[0]  # Remove .nii.gz
             
             # Try direct matching first
             matching_rows = meta[meta['basename'] == basename]
@@ -229,39 +229,39 @@ if __name__ == '__main__':
                 matching_mask = metadata_no_zeros == basename_no_zeros
                 if any(matching_mask):
                     # Update rows where the no-zeros basename matches
-                    meta.loc[matching_mask, 'Slice label'] = slice_label
-                    print(f"✓ Matched {filename} using zero-stripping")
+                    meta.loc[matching_mask, 'slice_idx'] = slice_label
+                    print(f"✓ Matched {file_name} using zero-stripping")
                     continue
             
             if len(matching_rows) > 0:
-                meta.loc[meta['basename'] == basename, 'Slice label'] = slice_label
-                print(f"✓ Matched {filename}")
+                meta.loc[meta['basename'] == basename, 'slice_idx'] = slice_label
+                print(f"✓ Matched {file_name}")
             else:
-                print(f"⚠️ No metadata match found for {filename} after processing")
+                print(f"⚠️ No metadata match found for {file_name} after processing")
                 
                     
     
     # Create output directory if it doesn't exist
     os.makedirs(os.path.dirname(args.meta_output), exist_ok=True)
 
-    # Remove rows without a Slice label
-    if 'Slice label' in meta.columns:
+    # Remove rows without a slice_idx
+    if 'slice_idx' in meta.columns:
         original_count = len(meta)
-        meta = meta.dropna(subset=['Slice label'])
+        meta = meta.dropna(subset=['slice_idx'])
         removed_count = original_count - len(meta)
         if removed_count > 0:
-            print(f"ℹ️ Removed {removed_count} rows without Slice label")
+            print(f"ℹ️ Removed {removed_count} rows without slice_idx")
     
     # Create ID column from basename
-    meta['ID'] = meta['basename']
+    # meta['ID'] = meta['basename']
     
     # Rename columns
-    meta = meta.rename(columns={'age': 'Age', 'sex': 'Sex', 'dataset': 'Dataset'})
+    # meta = meta.rename(columns={'age': 'Age', 'sex': 'Sex', 'dataset': 'Dataset'})
     
     # Remove unwanted columns
-    meta = meta.drop(columns=['SCAN_PATH', 'filename', 'basename'], errors='ignore')
+    meta = meta.drop(columns=['SCAN_PATH', 'basename'], errors='ignore')
     # Convert to integer
-    meta['Slice label'] = meta['Slice label'].astype(int)
+    meta['slice_idx'] = meta['slice_idx'].astype(int)
 
     # Extract dataset name without suffix ("_reg")
     dataset_name = args.dataset.split('_')[0] if args.dataset else "unknown"
