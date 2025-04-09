@@ -33,10 +33,10 @@ def get_id_and_path(row, image_dir, nested = False, no_tms=True):
     if no_tms and row['Ok registered? Y/N'] == "N" :
         print("skip - bad registration")
         return "","","",""
-    if "NDAR" in str(row['Filename']) and nested==False and no_tms:
-        patient_id = str(row['Filename']).split("_")[0]
+    if "NDAR" in str(row['file_name']) and nested==False and no_tms:
+        patient_id = str(row['file_name']).split("_")[0]
     else:
-        patient_id = str(row['Filename']).split(".")[0]
+        patient_id = str(row['file_name']).split(".")[0]
 
     path = find_file_in_path(patient_id, os.listdir(image_dir))
     
@@ -68,10 +68,10 @@ def get_id_and_path_not_nested(row, image_dir, masks_dir):
     if row['Ok registered? Y/N'] == "N":
         print("skip - bad registration")
         return 0,0,0,0
-    if "NDAR" in row['Filename']:
-        patient_id = row['Filename'].split("_")[0]
+    if "NDAR" in row['file_name']:
+        patient_id = row['file_name'].split("_")[0]
     else:
-        patient_id = row['Filename'].split(".")[0]
+        patient_id = row['file_name'].split(".")[0]
 
     path = find_file_in_path(patient_id, os.listdir(masks_dir))
     if len(path)<3:
@@ -398,7 +398,7 @@ def register_to_template(input_image_path, output_path, fixed_image_path,create_
             print("Cannot transform", input_image_path.split("/")[-1])
         
 if __name__=="__main__":
-    # replace header with ,AGE_M,SEX,SCAN_PATH,Filename,dataset
+    # replace header with ,AGE_M,SEX,SCAN_PATH,file_name,dataset
     '''
     z_enhance_and_debias_all_in_path(image_dir='data/mni_templates_BK/',
                                     path_to='data/z_scored_mris/z_with_pseudo/',\
@@ -436,19 +436,19 @@ if __name__=="__main__":
                                      input_annotation_file = "data/Dataset_calgary.csv",
                                      for_training=False, annotations=False)       
                                                              
-    # aomic replace header with ,AGE_M,SEX,SCAN_PATH,Filename,dataset
+    # aomic replace header with ,AGE_M,SEX,SCAN_PATH,file_name,dataset
     z_enhance_and_debias_all_in_path(image_dir='data/t1_mris/aomic_reg/',
                                      path_to='data/t1_mris/aomic_reg_ench/',
                                      input_annotation_file = "data/Dataset_aomic.csv",
                                      for_training=False, annotations=False)
                                                                     
-    # NIHM replace header with ,AGE_M,SEX,SCAN_PATH,Filename,dataset
+    # NIHM replace header with ,AGE_M,SEX,SCAN_PATH,file_name,dataset
     z_enhance_and_debias_all_in_path(image_dir='data/t1_mris/nihm_reg/',
                                      path_to='data/t1_mris/nihm_ench_reg/',
                                      input_annotation_file = "data/Dataset_nihm.csv",
                                     for_training=False, annotations=False)
                                      
-    # ICBM replace header with ,AGE_M,SEX,SCAN_PATH,Filename,dataset
+    # ICBM replace header with ,AGE_M,SEX,SCAN_PATH,file_name,dataset
     z_enhance_and_debias_all_in_path(image_dir='data/t1_mris/icbm_reg/',
                                      path_to='data/t1_mris/icbm_ench_reg/',
                                      input_annotation_file = "data/Dataset_icbm.csv",

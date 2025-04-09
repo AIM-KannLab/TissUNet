@@ -25,16 +25,16 @@ def find_mask_files_ct(subfolder_path):
     return glob.glob(mask_path_pattern)
 
 
-def save_file_results(csv_results, csv_output_dir, filename):
+def save_file_results(csv_results, csv_output_dir, file_name):
     """
     Save results for a single file to a CSV.
     """
     results_df = pd.DataFrame(csv_results)
     file_output_path = os.path.join(
-        csv_output_dir, f"{filename}_thickness_calculation.csv"
+        csv_output_dir, f"{file_name}_thickness_calculation.csv"
     )
     results_df.to_csv(file_output_path, index=False)
-    print(f"Results for {filename} saved to {file_output_path}")
+    print(f"Results for {file_name} saved to {file_output_path}")
 
 
 def save_global_results(global_csv_results, csv_output_dir):

@@ -116,9 +116,13 @@ echo "=============STEP 4=================="
 echo "====================================="
 echo "📊 Computing metrics..."
 python compute_metrics.py -pi "$OUTPUT_DIR/preds_post" \
-                          -mo "$OUTPUT_DIR/preds_post/metrics.csv"
+                          -mo "$OUTPUT_DIR/preds_post/meta.csv"
 
 python compute_metrics.py -pi "$OUTPUT_DIR/preds_post_def" \
-                          -mo "$OUTPUT_DIR/preds_post_def/metrics.csv"
+                          -mo "$OUTPUT_DIR/preds_post_def/meta.csv"
 
+# ---------------------- Finish ----------------
+echo "====================================="
+echo "=============DONE====================="
+echo "====================================="
 echo "✅ Pipeline complete! All results saved in '$OUTPUT_DIR/'"

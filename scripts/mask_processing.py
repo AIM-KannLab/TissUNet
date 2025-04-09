@@ -74,18 +74,18 @@ def get_slice_for_file_ct(mask_path, lookup_table_path):
     """
     Get the slice index for a given file from the lookup table.
     """
-    # Get filename without extension and remove _ct suffix
-    filename = os.path.basename(mask_path).split(".")[0].replace("_ct", "")
+    # Get file_name without extension and remove _ct suffix
+    file_name = os.path.basename(mask_path).split(".")[0].replace("_ct", "")
 
     # Read the lookup table
     df = pd.read_csv(lookup_table_path)
 
-    # Convert both the lookup ID and filename to strings and strip whitespace
+    # Convert both the lookup ID and file_name to strings and strip whitespace
     df["ID"] = df["ID"].astype(str).str.strip()
-    filename = str(filename).strip()
+    file_name = str(file_name).strip()
 
     # Find matching row
-    matching_row = df[df["ID"] == filename]
+    matching_row = df[df["ID"] == file_name]
 
     if not matching_row.empty:
         return matching_row["Slice label"].iloc[0]

@@ -10,7 +10,7 @@ import subprocess
 def parse_args():
     parser = argparse.ArgumentParser(description='Predicting')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with MR images and meta.csv')
-    parser.add_argument('--output', '-o', type=str, required=False, help='Output path for meta.csv')
+    parser.add_argument('--output', '-o', type=str, required=False, help='Output path for predictions')
     parser.add_argument('--device', '-d', type=str, required=True,  help='Device to run prediction on')
     parser.add_argument('--cleanup', action='store_true', help='Remove temporary directories after execution')
     args = parser.parse_args()
@@ -78,18 +78,24 @@ def main(args):
     temp_mri_path = os.path.join(args.input, 'temp')
     os.makedirs(temp_mri_path, exist_ok=True) 
     
+    # Copy meta.csv to temp directory
+    os.makedirs(args.output, exist_ok=True)
+    meta_path = os.path.join(args.input, 'meta.csv')
+    meta = pd.read_csv(meta_path)
+    meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
+    
     # Remember orientations for each file that ends with _0000.nii.gz
     orientations = {}
-    filenames = [fn for fn in os.listdir(args.input) if fn.endswith('_0000.nii.gz')]
-    for filename in sorted(filenames):
-        sample_name = filename.replace('_0000.nii.gz', '')
-        file_path = os.path.join(args.input, filename)
+    file_names = [fn for fn in os.listdir(args.input) if fn.endswith('_0000.nii.gz')]
+    for file_name in sorted(file_names):
+        sample_name = file_name.replace('_0000.nii.gz', '')
+        file_path = os.path.join(args.input, file_name)
         assert os.path.exists(file_path)
         file = read_nii_with_fix(file_path)
         
         orientations[sample_name] = get_orientation(file)
         reoriented_file = reorient(file, target_orientation=('L', 'P', 'I'))
-        reoriented_path = os.path.join(temp_mri_path, filename)
+        reoriented_path = os.path.join(temp_mri_path, file_name)
         nib.save(reoriented_file, reoriented_path)
     
     # Run prediction script
@@ -97,8 +103,8 @@ def main(args):
     subprocess.run(command, shell=True, check=True)
     
     # Reorient predictions back to original orientation
-    for filename in sorted(filenames):
-        sample_name = filename.replace('_0000.nii.gz', '')
+    for file_name in sorted(file_names):
+        sample_name = file_name.replace('_0000.nii.gz', '')
         file_path = os.path.join(args.output, sample_name+'.nii.gz')
         assert os.path.exists(file_path)
         file = read_nii_with_fix(file_path)
@@ -106,7 +112,7 @@ def main(args):
         original_orientation = orientations[sample_name]
         file = reorient(file, target_orientation=original_orientation)
         nib.save(file, file_path)
-        
+    
     # Clean up
     if args.cleanup:
         os.rmdir(temp_mri_path)
