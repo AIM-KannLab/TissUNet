@@ -73,11 +73,17 @@ where:
 - <span style="color:green">GREEN</span> color denotes `META`
 - <span style="color:blue">BLUE</span> color denotes `COLUMNS IN META`
 # Option 1: Using bash script to run the pipeline
-For convenience, you can run the entire pipeline using the provided bash script. This will execute all steps in order, from preprocessing to computing metrics.
+For convenience, you can run the entire pipeline using the provided bash script. This will execute all steps in order, from preprocessing to computing metrics. 
+
+The pipeline will run a prediction of an axial slices (for more into look [here](https://github.com/zapaishchykova/tmt2)) and write them to the copy of `meta.csv` file alongside the initialy provided data into `slice_idx` column. If you want to prevent overwriting this column - you can disable slice prediction by using `--no-predict-slices` flag to the pipeline.
+
+If you want to disable registration during preprocessing phase - use `--no-register` flag.
+
+The pipeline also creates copies of MR images in LPI orientation and stores them in `temp` folder. If you want to save a bit of space and remove `temp` folder after execution of predicitons you can use `--cleanup` flag.
 
 ```
 source venv/bin/activate
-bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--no-register] [--cleanup]
+bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--no-register] [--cleanup] [--no-predict-slices]
 ```
 
 # Option 2: Using individual scripts to run the pipeline
