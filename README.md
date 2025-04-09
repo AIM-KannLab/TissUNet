@@ -75,11 +75,11 @@ where:
 # Option 1: Using bash script to run the pipeline
 For convenience, you can run the entire pipeline using the provided bash script. This will execute all steps in order, from preprocessing to computing metrics. 
 
-The pipeline will run a prediction of an axial slices (for more into look [here](https://github.com/zapaishchykova/tmt2)) and write them to the copy of `meta.csv` file alongside the initialy provided data into `slice_idx` column. If you want to prevent overwriting this column - you can disable slice prediction by using `--no-predict-slices` flag to the pipeline.
+The pipeline predicts axial slice indices (see details) and writes them to the slice_idx column in a copy of meta.csv. Use --no-predict-slices to skip this step and avoid overwriting existing data.
 
-If you want to disable registration during preprocessing phase - use `--no-register` flag.
+To skip image registration during preprocessing, use --no-register.
 
-The pipeline also creates copies of MR images in LPI orientation and stores them in `temp` folder. If you want to save a bit of space and remove `temp` folder after execution of predicitons you can use `--cleanup` flag.
+Predicted MR images in LPI orientation are saved in the temp folder. Use --cleanup to delete this folder after predictions and save space.
 
 ```
 source venv/bin/activate
