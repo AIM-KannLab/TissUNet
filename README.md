@@ -62,7 +62,7 @@ BCP-431010-64mo-v1_13_T1w.nii,9,M
 IXI621-Guys-1100-T1.nii,12,F
 ```
 
-## Visualizations
+<!-- ## Visualizations
 ### Operations
 ![pipeline](assets/pipeline.png "Pipeline")
 
@@ -71,14 +71,45 @@ IXI621-Guys-1100-T1.nii,12,F
 where:
 - BLACK. color denotes `DIRECTORY`
 - <span style="color:green">GREEN</span> color denotes `META`
-- <span style="color:blue">BLUE</span> color denotes `COLUMNS IN META`
+- <span style="color:blue">BLUE</span> color denotes `COLUMNS IN META` -->
 # Option 1: Using bash script to run the pipeline
-For convenience, you can run the entire pipeline using the provided bash script. This will execute all steps in order, from preprocessing to computing metrics.
+For convenience, you can run the entire pipeline using the provided bash script. This will execute all steps in order, from preprocessing to computing metrics. 
 
+The pipeline predicts axial slice indices (see details) and writes them to the `slice_idx` column in a copy of meta.csv. To skip the slice prediction use `--no-predict-slices` and provide the `slice_idx` column. 
+
+To skip image registration during preprocessing, use `--no-register`.
+
+Predicted MR images in LPI orientation are saved in the temp folder. Use `--cleanup` to delete this folder after predictions and save space.
+
+To specify custom `meta` file path (defaut `<in_dir>/meta.csv`) use `--meta`.
 ```
-source venv/bin/activate
-bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--no-register] [--cleanup]
+bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--no-register] [--cleanup] [--no-predict-slices] [--meta]
 ```
+Example with custom meta path:
+```
+bash run_pipeline.sh mr out cuda --meta custom_meta.csv
+```
+with `custom_meta.csv`:
+```
+file_name,age,sex
+BCP-418009-53mo-v1_8_T1w.nii,6,F
+BCP-431010-64mo-v1_13_T1w.nii,9,M
+IXI621-Guys-1100-T1.nii,12,F
+```
+
+Example with `--no-predict-slices`:
+```
+bash run_pipeline.sh mr out cuda --no-predict-slices
+```
+with `mr/meta.csv`:
+```
+file_name,age,sex,slice_idx
+BCP-418009-53mo-v1_8_T1w.nii,6,F,32
+BCP-431010-64mo-v1_13_T1w.nii,9,M,43
+IXI621-Guys-1100-T1.nii,12,F,51
+```
+
+
 
 # Option 2: Using individual scripts to run the pipeline
 ## Step 1: Preprocess
