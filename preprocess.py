@@ -13,7 +13,7 @@ import SimpleITK as sitk
 def parse_args():
     parser = argparse.ArgumentParser(description='Preprocessing')
     parser.add_argument('--input',  '-i', type=str, required=True,  help='Input directory with NIfTI files and meta.csv')
-    parser.add_argument('--output', '-o', type=str, required=True, help='Output directory (optional)')
+    parser.add_argument('--output', '-o', type=str, required=True, help='Output directory')
     parser.add_argument('--meta', '-m', type=str, required=False, help='Meta file (optional)')
     parser.add_argument('--no-register', action='store_false', dest='register', help='Disable MRI registration')
     args = parser.parse_args()
