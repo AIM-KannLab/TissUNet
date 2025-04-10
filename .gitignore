@@ -4,8 +4,9 @@ venv
 .venv
 .DS_Store
 
-mr*
+mr_*
 ct*
+temp
 data*
 preds*
 nnUNet_results*
