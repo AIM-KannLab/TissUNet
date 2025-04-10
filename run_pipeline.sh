@@ -50,20 +50,31 @@ if [ "$NO_REGISTER" = true ]; then echo "👨‍🦲 Registration: false"; else 
 if [ "$NO_PREDICT_SLICES" = true ]; then echo "🍕 Slice prediction: false"; else echo "🍕 Slice prediction: true"; fi
 echo "🧹 Cleanup: $CLEANUP"
 if [ -n "$META_PATH" ]; then echo "🧾 Using external meta path: $META_PATH"; fi
+# if $META_PATH is not set, use the $INPUT_DIR/meta.csv
+if [ -z "$META_PATH" ]; then
+    META_PATH="$INPUT_DIR/meta.csv"
+    echo "🗂️ Meta path: $META_PATH"
+fi
+
+# ---------------- Checks ----------------
+# If $NO_PREDICT_SLICES is true, check if the meta.csv file contains the 'slice_idx' column
+if [ "$NO_PREDICT_SLICES" = true ]; then
+    if ! grep -q "slice_idx" "$META_PATH"; then
+        echo "❌ Error: --no-predict-slices is set but $META_PATH does not contain the 'slice_idx' column."
+        echo "Please remove the --no-predict-slices flag or add the 'slice_idx' column to the meta.csv file."
+        exit 1
+    fi
+fi
 
 # ---------------- Preprocess ----------------
 echo "====================================="
 echo "=============STEP 1=================="
 echo "====================================="
 echo "🧼 Preprocessing input data..."
-PREPROCESS_CMD="python preprocess.py -i $INPUT_DIR -o $OUTPUT_DIR/mr_pre"
+PREPROCESS_CMD="python preprocess.py -i $INPUT_DIR -o $OUTPUT_DIR/mr_pre --meta $META_PATH"
 if [ "$NO_REGISTER" = true ]; then
     PREPROCESS_CMD+=" --no-register"
 fi
-if [ -n "$META_PATH" ]; then
-    PREPROCESS_CMD+=" --meta $META_PATH"
-fi
-# Print the command for debugging
 eval $PREPROCESS_CMD
 
 # ---------------- Predict ----------------
@@ -79,6 +90,7 @@ PREDICT_CMD="python predict.py -i $OUTPUT_DIR/mr_pre -o $OUTPUT_DIR/preds -d $DE
 if [ "$CLEANUP" = true ]; then
     PREDICT_CMD+=" --cleanup"
 fi
+echo "Running command: $PREDICT_CMD"
 eval $PREDICT_CMD
 
 # ---------------- Predict Slices ----------------

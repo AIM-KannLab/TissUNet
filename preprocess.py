@@ -55,7 +55,7 @@ def read_nii_with_fix(file_path: str):
             
 def check_meta_columns(meta):
     if not all([col in meta.columns for col in ['file_name', 'age', 'sex']]):
-        raise ValueError('meta.csv must contain file_name, age and sex columns')
+        raise ValueError('meta file must contain file_name, age and sex columns')
     
 def get_nnunet_file_name(file_name):
     output_file_name = None
