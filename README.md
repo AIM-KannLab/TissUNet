@@ -133,7 +133,7 @@ Example:
 python preprocess.py -i mr -o mr_pre
 ```
 
-## Step 2: Predict
+## Step 2: Predict 
 ### Predict TissUNet
 This will run TissUNet on all `.nii.gz` files in `<in_dir>` and write results in `<out_dir>`. During script execution, the temporary files in LPI orientation are created inside `<in_dir>`. Specify the `--cleanup` flag to automatically remove them after script completion.
 ```
@@ -223,14 +223,14 @@ python scripts/main_thickness_estimation.py --dataset "YOUR_DATASET_NAME" \
 --lookup-slice-table preds/meta.csv \
 --csv-output-dir path/to/results_thickness \
 --plot-output-dir path/to/results_thickness \
---processed-image-dir mr_pre
+--processed-image-dir preds
 ```
 
 Where:
 - `YOUR_DATASET_NAME` is your custom dataset name (can be anything),
 - `preds/meta.csv` is a path from -mo option from the "Predict Slices" step,
 - `path/to/results_thickness` is a path where the output will be stored (useful for debug),
-- `processed-image-dir` is a path to predicted masks from "Predict" step
+- `preds` is a path to predicted masks (from "Predict" step)
 
 The aggregated and filtered skull thickness results will be stored in `path/to/results_thickness/global_thickness_calculation.csv`. There will also be `path/to/results_thickness/skipped_images.csv` with info on failed cases.
 
