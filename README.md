@@ -142,7 +142,7 @@ python predict.py -i mr_pre \
 
 
 
-### Predict Slices
+### Optional: Predict Slices (needed only for the skull thickness estimation)
 This will run DenseNet slice prediction on all `.nii.gz` files in `<in_dir>` using `<in_meta_path>` write those values in the `slice_label` column, and save it in the `<out_meta_path>`.
 ```
 python predict_slices.py -i <in_dir> \
@@ -201,6 +201,24 @@ The output CSV contains one row per NIfTI file, with columns for the file name, 
 
 
 # Optional: Skull Thickness Estimation
+## Option 1: Single dataset
+To estimate skull thickness on a single dataset, run the following script:
+```
+python scripts/main_thickness_estimation.py --dataset "YOUR_DATASET_NAME" \
+--lookup-slice-table preds/meta.csv \
+--csv-output-dir path/to/results_thickness \
+--plot-output-dir path/to/results_thickness \
+--processed-image-dir mr_pre
+```
+Where:
+- `YOUR_DATASET_NAME` is your custom dataset name (can be anything),
+- `preds/meta.csv` is a path from -mo option from the "Predict Slices" step,
+- `path/to/results_thickness` is a path where the output will be stored (useful for debug),
+- `processed-image-dir` is a path to predicted masks from "Predict" step
+
+The aggregated and filtered skull thickness results will be stored in `path/to/results_thickness/global_thickness_calculation.csv`. There will also be `path/to/results_thickness/skipped_images.csv` with info on failed cases.
+
+## Option 2: Batch processing
 To batch process multiple datasets for the skull thickness estimation, please add the folder names of the datasets you'd like to process under `datasets`. Our folder setup is as follows:
 
 ```
@@ -221,10 +239,10 @@ results/
 
 ```
 bash process_thickness_estimation.sh \
--- lookup-slice-table "supp_data/metadata_$dataset.csv" \
--- csv-output-dir "results/results_thickness/$dataset" \
--- plot-output-dir "results/results_thickness/$dataset" \
--- processed-image-dir "data/3d_outputs/$dataset" \
+--lookup-slice-table "supp_data/metadata_$dataset.csv" \
+--csv-output-dir "results/results_thickness/$dataset" \
+--plot-output-dir "results/results_thickness/$dataset" \
+--processed-image-dir "data/3d_outputs/$dataset" \
 
 ```
 
