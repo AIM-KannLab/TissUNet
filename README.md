@@ -1,3 +1,19 @@
+# TissUnet: Improved Extracranial Tissue and Cranium Segmentation for Children through Adulthood
+Code for the preprint [Arxiv](https://arxiv.org/abs/2506.05660)
+
+Please cite:
+```
+@misc{mandzak2025tissunetimprovedextracranialtissue,
+  title        = {TissUnet: Improved Extracranial Tissue and Cranium Segmentation for Children through Adulthood},
+  author       = {Markian Mandzak and Elvira Yang and Anna Zapaishchykova and Yu-Hui Chen and Lucas Heilbroner and John Zielke and Divyanshu Tak and Reza Mojahed-Yazdi and Francesca Romana Mussa and Zezhong Ye and Sridhar Vajapeyam and Viviana Benitez and Ralph Salloum and Susan N. Chi and Houman Sotoudeh and Jakob Seidlitz and Sabine Mueller and Hugo J. W. L. Aerts and Tina Y. Poussaint and Benjamin H. Kann},
+  year         = {2025},
+  eprint       = {2506.05660},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  url          = {https://arxiv.org/abs/2506.05660},
+}
+```
+
 # Setup
 Use pip to setup the project.
 ```
@@ -222,3 +238,6 @@ For the batched processing (aka multiple dataset setup, [see here](https://githu
 
 # Known Issues
 - Not tested for gestational 36-44 weeks (neonatal) MRIs. The pipeline may not work for neonatal MRIs due to differences in brain structure and segmentation.
+
+## License
+CC BY-NC-ND 4.0
