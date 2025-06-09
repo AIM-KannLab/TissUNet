@@ -5,7 +5,7 @@ Please cite:
 ```
 @misc{mandzak2025tissunetimprovedextracranialtissue,
   title        = {TissUnet: Improved Extracranial Tissue and Cranium Segmentation for Children through Adulthood},
-  author       = {Markian Mandzak and Elvira Yang and Anna Zapaishchykova and Yu-Hui Chen and Lucas Heilbroner and John Zielke and Divyanshu Tak and Reza Mojahed-Yazdi and Francesca Romana Mussa and Zezhong Ye and Sridhar Vajapeyam and Viviana Benitez and Ralph Salloum and Susan N. Chi and Houman Sotoudeh and Jakob Seidlitz and Sabine Mueller and Hugo J. W. L. Aerts and Tina Y. Poussaint and Benjamin H. Kann},
+  author       = {Markiian Mandzak and Elvira Yang and Anna Zapaishchykova and Yu-Hui Chen and Lucas Heilbroner and John Zielke and Divyanshu Tak and Reza Mojahed-Yazdi and Francesca Romana Mussa and Zezhong Ye and Sridhar Vajapeyam and Viviana Benitez and Ralph Salloum and Susan N. Chi and Houman Sotoudeh and Jakob Seidlitz and Sabine Mueller and Hugo J. W. L. Aerts and Tina Y. Poussaint and Benjamin H. Kann},
   year         = {2025},
   eprint       = {2506.05660},
   archivePrefix= {arXiv},
