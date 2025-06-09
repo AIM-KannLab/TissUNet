@@ -201,7 +201,6 @@ The output CSV contains one row per NIfTI file, with columns for the file name, 
 
 
 # Optional: Skull Thickness Estimation
-## Option 1: Single dataset
 To estimate skull thickness on a single dataset, run the following script:
 ```
 python scripts/main_thickness_estimation.py --dataset "YOUR_DATASET_NAME" \
@@ -210,6 +209,7 @@ python scripts/main_thickness_estimation.py --dataset "YOUR_DATASET_NAME" \
 --plot-output-dir path/to/results_thickness \
 --processed-image-dir mr_pre
 ```
+
 Where:
 - `YOUR_DATASET_NAME` is your custom dataset name (can be anything),
 - `preds/meta.csv` is a path from -mo option from the "Predict Slices" step,
@@ -218,33 +218,7 @@ Where:
 
 The aggregated and filtered skull thickness results will be stored in `path/to/results_thickness/global_thickness_calculation.csv`. There will also be `path/to/results_thickness/skipped_images.csv` with info on failed cases.
 
-## Option 2: Batch processing
-To batch process multiple datasets for the skull thickness estimation, please add the folder names of the datasets you'd like to process under `datasets`. Our folder setup is as follows:
-
-```
-data/
-├── 3d_outputs/
-│   └── ExampleDataset/
-│       ├── file1.nii.gz
-│       ├── file2.nii.gz
-│       └── file3.nii.gz
-├── supp_data/
-│   └── metadata_ExampleDataset.csv
-results/
-├── plots/
-│   └── ExampleDataset/
-└── results_thickness/
-    └── ExampleDataset/
-```
-
-```
-bash process_thickness_estimation.sh \
---lookup-slice-table "supp_data/metadata_$dataset.csv" \
---csv-output-dir "results/results_thickness/$dataset" \
---plot-output-dir "results/results_thickness/$dataset" \
---processed-image-dir "data/3d_outputs/$dataset" \
-
-```
+For the batched processing (aka multiple dataset setup, [see here](https://github.com/AIM-KannLab/TissUNet/blob/main/scripts/Readme_batched_skulls.md)
 
 # Known Issues
 - Not tested for gestational 36-44 weeks (neonatal) MRIs. The pipeline may not work for neonatal MRIs due to differences in brain structure and segmentation.
