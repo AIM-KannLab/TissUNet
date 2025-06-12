@@ -6,6 +6,8 @@ import numpy as np
 import scipy.ndimage
 import nibabel as nib
 
+from nibabel.orientations import axcodes2ornt, ornt_transform, io_orientation
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Postprocessing')
     parser.add_argument('--mr_input',  '-mi', type=str, required=True,  help='MRI input directory')
@@ -51,6 +53,17 @@ def deface_nii_left(mri: np.array, brain_seg: np.array, background_value: int):
 def deface_mri_left(mri: np.array, brain_seg: np.array):
     return deface_nii_left(mri, brain_seg, background_value=0)
 
+
+def reorient_to_lpi(img):
+    orig_ornt = io_orientation(img.affine)
+    ras_ornt = axcodes2ornt(('L', 'P', 'I'))
+    transform = ornt_transform(orig_ornt, ras_ornt)
+    data = img.get_fdata()
+    new_data = nib.orientations.apply_orientation(data, transform)
+    new_affine = img.affine @ nib.orientations.inv_ornt_aff(transform, img.shape)
+    return nib.Nifti1Image(new_data, new_affine), transform
+
+
 def main(args):
     assert os.path.exists(args.mr_input), f'MRI input directory not found: {args.mr_input}'
     assert os.path.exists(args.preds_input), f'Predictions input directory not found: {args.preds_input}'
@@ -67,8 +80,8 @@ def main(args):
 
     print("\n🔍 Scanning input directories ...")
     paths_pairs = []
-    pred_file_names = [fn for fn in os.listdir(args.preds_input) if fn.endswith('.nii.gz')]
-    for file in sorted(pred_file_names):
+    pred_filenames = [fn for fn in os.listdir(args.preds_input) if fn.endswith('.nii.gz')]
+    for file in sorted(pred_filenames):
         if not file.endswith('.nii.gz'):
             print(f"⏭️ Skipping {file} (not a nii.gz file)")
             continue
@@ -83,10 +96,14 @@ def main(args):
 
     for i, (mr_path, pred_path) in enumerate(paths_pairs):
         print(f"\n[{i+1}/{len(paths_pairs)}] Processing {mr_path} and {pred_path} ...")
-        mr = nib.load(mr_path)
+        mr_img = nib.load(mr_path)
+        mr, mr_transform = reorient_to_lpi(mr_img)
         mr_data = mr.get_fdata()
-        pred = nib.load(pred_path)
+
+        pred_img = nib.load(pred_path)
+        pred, pred_transform = reorient_to_lpi(pred_img)
         pred_data = pred.get_fdata()
+
         
         # Copy data
         mr_out_data   = mr_data.copy()
@@ -115,15 +132,13 @@ def main(args):
         print(f"💾 Saving processed files: {mr_out_path} and {pred_out_path}")
         nib.save(mr_out_file, mr_out_path)
         nib.save(pred_out_file, pred_out_path)
+        
 
     # Copy mr_input/meta.csv to mr_output/meta.csv
-    meta_input_path = os.path.join(args.preds_input, 'meta.csv')
-    meta_output_path_1 = os.path.join(args.mr_output, 'meta.csv')
-    meta_output_path_2 = os.path.join(args.preds_output, 'meta.csv')
-    print(f"\n📑 Copying metadata: {meta_input_path} -> {meta_output_path_1} ...")
-    os.system(f'cp {meta_input_path} {meta_output_path_1}')
-    print(f"📑 Copying metadata: {meta_input_path} -> {meta_output_path_2} ...")
-    os.system(f'cp {meta_input_path} {meta_output_path_2}')
+    meta_input_path = os.path.join(args.mr_input, 'meta.csv')
+    meta_output_path = os.path.join(args.mr_output, 'meta.csv')
+    print(f"\n📑 Copying metadata: {meta_input_path} -> {meta_output_path} ...")
+    os.system(f'cp {meta_input_path} {meta_output_path}')
 
     print("\n🎉 Postprocessing completed successfully!")
 
