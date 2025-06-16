@@ -19,6 +19,8 @@ def parse_args():
     return args
 
 def keep_largest_component(seg: np.ndarray) -> np.ndarray:
+    if len(np.unique(seg)) != 2:
+        return None
     assert np.array_equal(np.unique(seg), [0, 1]), 'Segmentation mask must be binary (0 and 1)'
 
     labeled_array, num_features = scipy.ndimage.label(seg)  # Label connected components
@@ -112,6 +114,9 @@ def main(args):
         # Filter brain mask
         brain_mask = (pred_data == brain_val).astype(np.uint8)
         brain_mask_filtered = keep_largest_component(brain_mask)
+        if brain_mask_filtered is None:
+            print(f"⚠️ Warning: No brain mask found in {pred_path}. Skipping this file.")
+            continue
         pred_out_data[(pred_data == brain_val) & (brain_mask_filtered == 0)] = 0
         
         if args.deface:
