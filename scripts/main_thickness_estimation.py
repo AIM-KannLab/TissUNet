@@ -61,7 +61,7 @@ def process_mask_file(
     os.makedirs(filename_plot_dir, exist_ok=True)
     os.makedirs(csv_output_dir, exist_ok=True)
 
-    z_slice_range = get_slice_range(z_index, slice_range=15)
+    z_slice_range = get_slice_range(z_index, slice_range=50)
     csv_results = []
     skipped_images = []
     single_contour_count = 0
@@ -87,7 +87,7 @@ def process_mask_file(
 
 
 def process_slice(
-    mask_binary, z, filename, filename_plot_dir, csv_results, dataset_name, plot_results_enabled=False
+    mask_binary, z, filename, filename_plot_dir, csv_results, dataset_name, plot_results_enabled=True
 ):
     """
     Process a single slice for thickness calculations and visualization.
@@ -358,7 +358,7 @@ def main():
 
     # Parallel processing
     num_workers = max(
-        1, multiprocessing.cpu_count() - 2
+        1, 24
     )  # Leave one core free, but ensure at least 1 worker
     # num_workers = 50
     print(f"Using {num_workers} parallel workers")

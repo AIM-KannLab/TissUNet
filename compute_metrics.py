@@ -74,7 +74,7 @@ def main(args):
             flat_record['sample_name'] = meta_data.iloc[0]['sample_name']
             flat_record['age'] = meta_data.iloc[0]['age']
             flat_record['sex'] = meta_data.iloc[0]['sex']
-            flat_record['slice_idx'] = meta_data.iloc[0]['slice_idx']
+            flat_record['Slice label'] = meta_data.iloc[0]['Slice label']
         
         flat_record.update({k: v for k, v in value.items() if k != 'volumes' and k != 'img_info'})
 

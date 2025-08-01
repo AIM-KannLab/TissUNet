@@ -137,7 +137,9 @@ def main(args):
     for file_name in file_names:
         if file_name not in meta['file_name'].values:
             print(f'The file_name {file_name} is not found in meta.csv. Please, make sure that all file_names from input directory are present in meta.csv')
-            sys.exit(1)
+            #sys.exit(1)
+            #remove the file from the list
+            file_names.remove(file_name)
     meta['file_name'] = meta['file_name'].apply(lambda x: get_nnunet_file_name(x))
     meta['sample_name'] = meta['file_name'].apply(lambda x: get_sample_name(x))
     meta.to_csv(os.path.join(args.output, 'meta.csv'), index=False)
@@ -151,14 +153,17 @@ def main(args):
 
         output_file_name = get_nnunet_file_name(file_name)
         output_file_path = os.path.join(args.output, output_file_name)
-        nib.save(file, output_file_path)
+        
         
         # Register to the template
         if args.register:
             print(f"\tRegistering to the template...")
             age = meta[meta['file_name'] == output_file_name]['age'].values[0]
             template_path = select_template_based_on_age(age)
-            register_to_template(output_file_path, output_file_path, template_path)
+            print(template_path)
+            register_to_template(file_path, output_file_path, template_path)
+        else:
+            nib.save(file, output_file_path)
         
         print(f"\tSaved to {output_file_path}")
         print()

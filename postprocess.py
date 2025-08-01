@@ -140,8 +140,8 @@ def main(args):
         
 
     # Copy mr_input/meta.csv to mr_output/meta.csv
-    meta_input_path = os.path.join(args.mr_input, 'meta.csv')
-    meta_output_path = os.path.join(args.mr_output, 'meta.csv')
+    meta_input_path = os.path.join(args.preds_input, 'meta.csv')
+    meta_output_path = os.path.join(args.preds_output, 'meta.csv')
     print(f"\n📑 Copying metadata: {meta_input_path} -> {meta_output_path} ...")
     os.system(f'cp {meta_input_path} {meta_output_path}')
 

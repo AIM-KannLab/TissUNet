@@ -3,7 +3,7 @@ from skimage import measure
 from skimage.draw import polygon
 
 
-def get_slice_range(z_index, slice_range=15):
+def get_slice_range(z_index, slice_range=70):
     """
     Get 15 values above a given z_index.
     Offset the z_index by 10 slices which is 1cm to ensure the eye sockets do not skew

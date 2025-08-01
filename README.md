@@ -112,25 +112,25 @@ Parameters:
 
 Example:
 ```
-bash run_pipeline.sh mr out cuda --no-predict-slices --meta mr/custom_meta.csv
+bash run_pipeline.sh mr out cuda --no-predict-slices --meta mr/meta.csv # Optional: Skip slice prediction
+bash run_pipeline.sh mr out cuda --meta mr/meta.csv --thickness # Optional: Estimate skull thickness
 ```
-with `mr/custom_meta.csv`:
+
+with `mr/meta.csv`:
 ```
 file_name,age,sex,slice_idx
-BCP-418009-53mo-v1_8_T1w.nii,6,F,32
-BCP-431010-64mo-v1_13_T1w.nii,9,M,43
-IXI621-Guys-1100-T1.nii,12,F,51
+img_T1w.nii,6,F,32
 ```
 
 # Option 2: Using individual scripts to run the pipeline
 ## Step 1: Preprocess
 The following script will reorient all `.nii.gz` in `<in_dir>` into LPI orientation and add `_0000.nii.gz` postfix. If `<out_dir>` is not specified, it will overwrite files in `<in_dir>`. Pass the `--no-register` flag if you want to omit the registration phase.
 ```
-python preprocess.py -i <in_dir> -o <out_dir> [--no-register]
+python preprocess.py -i mr -o out [--no-register]
 ```
 Example:
 ```
-python preprocess.py -i mr -o mr_pre
+python preprocess.py -i mr -o out/mr_pre
 ```
 
 ## Step 2: Predict 
@@ -150,10 +150,9 @@ Example:
 export nnUNet_raw="$(pwd)/nnUNet_raw" # This path does not exist lol
 export nnUNet_preprocessed="$(pwd)/nnUNet_preprocessed"
 export nnUNet_results="$(pwd)/nnUNet_results"
-python predict.py -i mr_pre \
-                  -o preds \
-                  -d cuda \
-                  --cleanup
+python predict.py -i out/mr_pre \
+                  -o out/preds \
+                  -d cuda 
 ```
 
 
@@ -169,9 +168,9 @@ python predict_slices.py -i <in_dir> \
 ```
 Example:
 ```
-python predict_slices.py -i mr_pre \
-                         -mi mr_pre/meta.csv \
-                         -mo preds/meta.csv
+python predict_slices.py -i out/mr_pre \
+                         -mi out/mr_pre/meta.csv \
+                         -mo out/preds/meta.csv
 ```
 
 ## Step 3: Post-process
@@ -185,16 +184,13 @@ python postprocess.py -mi <mr_input_path> \
 ```
 Example:
 ```
-python postprocess.py -mi mr_pre \
-                      -pi preds \
-                      -mo mr_post \
-                      -po preds_post
-
-python postprocess.py -mi mr_pre \
-                      -pi preds \
-                      -mo mr_post_def \
-                      -po preds_post_def \
+python postprocess.py -mi out/mr_pre \
+                      -pi out/preds \
+                      -mo out/mr_post \
+                      -po out/preds_post
                       --deface
+
+
 ```
 
 ## Step 4: Compute metrics
@@ -205,11 +201,9 @@ python compute_metrics.py -pi <preds_input_path> \
 ```
 Example:
 ```
-python compute_metrics.py -pi preds_post \
-                          -mo preds_post/metrics.csv
 
-python compute_metrics.py -pi preds_post_def \
-                          -mo preds_post_def/metrics.csv
+python compute_metrics.py -pi out/preds_post_def \
+                          -mo out/preds_post_def/metrics.csv
 ```
 The output CSV contains one row per NIfTI file, with columns for the file name, file path, sample name, and voxel volumes for each labeled tissue (e.g., vol_brain, vol_skull, vol_temporalis, etc.).
 
@@ -219,11 +213,11 @@ The output CSV contains one row per NIfTI file, with columns for the file name, 
 # Optional: Skull Thickness Estimation
 To estimate skull thickness on a single dataset, run the following script:
 ```
-python scripts/main_thickness_estimation.py --dataset "YOUR_DATASET_NAME" \
---lookup-slice-table preds/meta.csv \
---csv-output-dir path/to/results_thickness \
---plot-output-dir path/to/results_thickness \
---processed-image-dir preds
+python scripts/main_thickness_estimation.py --dataset "demo" \
+--lookup-slice-table out/preds/meta.csv \
+--csv-output-dir out/results_thickness \
+--plot-output-dir out/results_thickness \
+--processed-image-dir out/preds
 ```
 
 Where:

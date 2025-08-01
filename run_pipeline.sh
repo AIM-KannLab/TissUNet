@@ -4,7 +4,7 @@ set -e  # Exit on error
 
 # ---------------- Parse Arguments ----------------
 if [ "$#" -lt 3 ]; then
-    echo "❌ Usage: bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--meta <meta_path>] [--no-register] [--no-predict-slices] [--cleanup]"
+    echo "❌ Usage: bash run_pipeline.sh <in_dir> <out_dir> <cpu/cuda> [--meta <meta_path>] [--no-register] [--no-predict-slices] [--cleanup] [--thickness]"
     exit 1
 fi
 
@@ -14,6 +14,7 @@ DEVICE=$3
 NO_REGISTER=false
 NO_PREDICT_SLICES=false
 CLEANUP=false
+RUN_THICKNESS=false
 META_PATH=""
 
 # Optional flags
@@ -30,6 +31,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --cleanup)
             CLEANUP=true
+            shift
+            ;;
+        --thickness)
+            RUN_THICKNESS=true
             shift
             ;;
         --meta)
@@ -49,6 +54,7 @@ echo "🖥️ Device: $DEVICE"
 if [ "$NO_REGISTER" = true ]; then echo "👨‍🦲 Registration: false"; else echo "👨‍🦲 Registration: true"; fi
 if [ "$NO_PREDICT_SLICES" = true ]; then echo "🍕 Slice prediction: false"; else echo "🍕 Slice prediction: true"; fi
 echo "🧹 Cleanup: $CLEANUP"
+echo "📏 Thickness estimation: $RUN_THICKNESS"
 if [ -n "$META_PATH" ]; then echo "🧾 Using external meta path: $META_PATH"; fi
 # if $META_PATH is not set, use the $INPUT_DIR/meta.csv
 if [ -z "$META_PATH" ]; then
@@ -133,8 +139,24 @@ python compute_metrics.py -pi "$OUTPUT_DIR/preds_post" \
 python compute_metrics.py -pi "$OUTPUT_DIR/preds_post_def" \
                           -mo "$OUTPUT_DIR/preds_post_def/meta.csv"
 
+# ---------------- Thickness Estimation ----------------
+if [ "$RUN_THICKNESS" = true ]; then
+    echo "====================================="
+    echo "=============STEP 5=================="
+    echo "====================================="
+    echo "📏 Running thickness estimation..."
+    python scripts/main_thickness_estimation.py --dataset "demo" \
+                                                --lookup-slice-table "$OUTPUT_DIR/preds/meta.csv" \
+                                                --csv-output-dir "$OUTPUT_DIR/results_thickness" \
+                                                --plot-output-dir "$OUTPUT_DIR/results_thickness" \
+                                                --processed-image-dir "$OUTPUT_DIR/preds"
+fi
+
 # ---------------------- Finish ----------------
 echo "====================================="
 echo "=============DONE====================="
 echo "====================================="
 echo "✅ Pipeline complete! All results saved in '$OUTPUT_DIR/'"
+if [ "$RUN_THICKNESS" = true ]; then
+    echo "📏 Thickness estimation results saved in '$OUTPUT_DIR/results_thickness/'"
+fi
