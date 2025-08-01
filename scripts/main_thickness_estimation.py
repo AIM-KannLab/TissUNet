@@ -61,7 +61,7 @@ def process_mask_file(
     os.makedirs(filename_plot_dir, exist_ok=True)
     os.makedirs(csv_output_dir, exist_ok=True)
 
-    z_slice_range = get_slice_range(z_index, slice_range=50)
+    z_slice_range = get_slice_range(z_index, slice_range=15)
     csv_results = []
     skipped_images = []
     single_contour_count = 0
