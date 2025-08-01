@@ -17,3 +17,4 @@ imea_warnings.txt
 metrics.json
 
 __pycache__/
+out/*
