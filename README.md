@@ -3,14 +3,12 @@ Code for the preprint [Arxiv](https://arxiv.org/abs/2506.05660)
 
 Please cite:
 ```
-@misc{mandzak2025tissunetimprovedextracranialtissue,
-  title        = {TissUnet: Improved Extracranial Tissue and Cranium Segmentation for Children through Adulthood},
-  author       = {Markiian Mandzak and Elvira Yang and Anna Zapaishchykova and Yu-Hui Chen and Lucas Heilbroner and John Zielke and Divyanshu Tak and Reza Mojahed-Yazdi and Francesca Romana Mussa and Zezhong Ye and Sridhar Vajapeyam and Viviana Benitez and Ralph Salloum and Susan N. Chi and Houman Sotoudeh and Jakob Seidlitz and Sabine Mueller and Hugo J. W. L. Aerts and Tina Y. Poussaint and Benjamin H. Kann},
-  year         = {2025},
-  eprint       = {2506.05660},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CV},
-  url          = {https://arxiv.org/abs/2506.05660},
+@article{TissUnet,
+	author = {Mandzak, Markiian and Yang, Elvira and Zapaishchykova, Anna and Chen, Yu-Hui and Heilbroner, Lucas and Zielke, John and Tak, Divyanshu and Mojahed-Yazdi, Reza and Mussa, Francesca Romana and Ye, Zezhong and Vajapeyam, Sridhar and Benitez, Viviana and Salloum, Ralph and Chi, Susan N. and Sotoudeh, Houman and Seidlitz, Jakob and Mueller, Sabine and Aerts, Hugo J. W. L. and Poussaint, Tina Y. and Kann, Benjamin H.},
+	title = {{TissUnet: Improved Extracranial Tissue and Cranium Segmentation for Children through Adulthood}},
+	journal = {Imaging Neuroscience},
+	year = {2025},
+	doi = {10.1162/IMAG.a.1067}
 }
 ```
 
