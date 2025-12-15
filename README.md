@@ -1,5 +1,5 @@
 # TissUnet: Improved Extracranial Tissue and Cranium Segmentation for Children through Adulthood
-Code for the preprint [Arxiv](https://arxiv.org/abs/2506.05660)
+Code for the article published in [Imaging Neuroscience, 2025](https://direct.mit.edu/imag/article/doi/10.1162/IMAG.a.1067/134410/TissUnet-Improved-Extracranial-Tissue-and-Cranium) [Arxiv](https://arxiv.org/abs/2506.05660)
 
 Please cite:
 ```
